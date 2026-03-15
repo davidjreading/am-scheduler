@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Addiction Medicine — Schedule Modeller</title>
+<style>
+/* fonts removed */
+
+:root {
+  --bg:        #07111e;
+  --surface:   #0d1f33;
+  --card:      #0f2338;
+  --border:    #1a3554;
+  --border2:   #224166;
+  --text:      #cfe3f7;
+  --dim:       #5a82a6;
+  --muted:     #2d5070;
+  --amcs:      #3b82f6;
+  --dcore:     #ef4444;
+  --dsupp:     #f97316;
+  --peri:      #a78bfa;
+  --senior:    #f59e0b;
+  --new:       #34d399;
+  --gold:      #fbbf24;
+  --warn:      #f59e0b;
+  --danger:    #ef4444;
+  --success:   #22c55e;
+  --panel-w:   380px;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* ── Layout ── */
+.app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+
+.topbar {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  height: 52px;
+  flex-shrink: 0;
+}
+
+.topbar-title {
+  font-family: monospace;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+
+.topbar-title span { color: var(--amcs); }
+
+.topbar-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.setting-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.setting-label {
+  font-size: 10px;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  white-space: nowrap;
+}
+
+.seg-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--dim);
+  font-family: monospace;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.seg-btn.active {
+  background: var(--amcs);
+  border-color: var(--amcs);
+  color: #fff;
+}
+.seg-btn:hover:not(.active) {
+  border-color: var(--border2);
+  color: var(--text);
+  background: var(--border);
+}
+
+.toggle-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--dim);
+  font-family: monospace;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.toggle-btn.on {
+  background: rgba(59,130,246,.15);
+  border-color: var(--amcs);
+  color: var(--amcs);
+}
+.toggle-btn .dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: currentColor;
+}
+
+.add-btn {
+  background: rgba(52,211,153,.1);
+  border: 1px solid rgba(52,211,153,.4);
+  color: var(--new);
+  font-family: monospace;
+  font-size: 11px;
+  padding: 4px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all .15s;
+  margin-left: auto;
+}
+.add-btn:hover { background: rgba(52,211,153,.2); }
+
+.body-row {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+
+/* ── Sidebar (deficits) ── */
+.sidebar {
+  width: 220px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 16px 14px;
+  overflow-y: auto;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.sidebar-section-title {
+  font-size: 9px;
+  font-family: monospace;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 8px;
+}
+
+.deficit-item {
+  margin-bottom: 10px;
+}
+
+.deficit-svc {
+  font-size: 10px;
+  color: var(--dim);
+  margin-bottom: 3px;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+
+.deficit-bar-wrap {
+  height: 6px;
+  background: var(--card);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 2px;
+}
+
+.deficit-bar-fill {
+  height: 100%;
+  border-radius: 3px;
+  transition: width .3s;
+}
+
+.deficit-nums {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  font-family: monospace;
+}
+
+.stat-block {
+  padding: 8px 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  margin-bottom: 6px;
+}
+.stat-block label {
+  font-size: 9px;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  display: block;
+  margin-bottom: 2px;
+}
+.stat-block .stat-val {
+  font-family: monospace;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+/* ── Main grid ── */
+.main {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+/* ── Cards ── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color .15s, transform .15s;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+.card:hover {
+  border-color: var(--border2);
+  transform: translateY(-1px);
+}
+.card.on-leave {
+  opacity: .45;
+  cursor: default;
+}
+.card.on-leave:hover { transform: none; }
+
+.card-stripe { height: 3px; flex-shrink: 0; }
+
+.card-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+.card-id-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+.card-id-left { display: flex; flex-direction: column; gap: 4px; }
+.card-id {
+  font-family: monospace;
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1;
+}
+.card-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.badge {
+  font-family: monospace;
+  font-size: 9px;
+  padding: 2px 5px;
+  border-radius: 3px;
+  font-weight: 500;
+  letter-spacing: .05em;
+}
+.cap-pills { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
+.cap-pill {
+  font-family: monospace;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-weight: 500;
+}
+
+.card-wks { text-align: right; }
+.card-wks-num {
+  font-family: monospace;
+  font-size: 22px;
+  font-weight: 600;
+  line-height: 1;
+}
+.card-wks-lbl {
+  font-size: 9px;
+  color: var(--dim);
+  letter-spacing: .08em;
+  margin-top: 2px;
+}
+
+.card-sites {
+  font-family: monospace;
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: .04em;
+}
+
+.bar-wrap {
+  height: 16px;
+  border-radius: 4px;
+  overflow: hidden;
+  display: flex;
+  background: #0a1628;
+}
+.bar-seg {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-family: monospace;
+  color: #fff;
+  font-weight: 600;
+  transition: width .3s;
+}
+.bar-free {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  padding-left: 5px;
+}
+.bar-free span {
+  font-size: 9px;
+  color: var(--muted);
+  font-style: italic;
+}
+
+.seg-legend { display: flex; gap: 8px; flex-wrap: wrap; }
+.seg-leg-item { display: flex; align-items: center; gap: 4px; font-size: 9px; color: var(--dim); }
+.seg-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
+
+.card-divider { height: 1px; background: var(--border); }
+
+.call-section-title {
+  font-size: 9px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 4px;
+}
+.call-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  margin-bottom: 3px;
+}
+.call-row-left { display: flex; align-items: center; gap: 5px; flex: 1; min-width: 0; }
+.call-dot { width: 5px; height: 5px; border-radius: 2px; flex-shrink: 0; }
+.call-lbl { font-size: 10px; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.call-days {
+  font-family: monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--gold);
+  flex-shrink: 0;
+}
+.call-days.capped { color: var(--warn); }
+.call-total-row {
+  display: flex;
+  justify-content: space-between;
+  padding-top: 5px;
+  border-top: 1px solid var(--border);
+  margin-top: 3px;
+}
+.call-total-lbl { font-size: 9px; color: var(--muted); }
+.call-total-val {
+  font-family: monospace;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.no-call { font-size: 10px; color: var(--muted); font-style: italic; }
+
+.card-notes {
+  font-size: 9px;
+  color: var(--dim);
+  font-style: italic;
+  line-height: 1.5;
+  border-top: 1px solid var(--border);
+  padding-top: 6px;
+}
+
+.summary-box {
+  background: #0d2b1f;
+  border: 1px solid #14532d55;
+  border-left: 2.5px solid var(--new);
+  border-radius: 5px;
+  padding: 7px 9px;
+  margin-top: auto;
+}
+.summary-lbl {
+  font-size: 8px;
+  color: #4ade80;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+  font-family: monospace;
+}
+.summary-txt { font-size: 10px; color: #86efac; line-height: 1.55; }
+
+/* Leave card */
+.leave-card-body {
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.leave-id {
+  font-family: monospace;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--dim);
+}
+.leave-lbl { font-size: 10px; color: var(--muted); font-style: italic; }
+
+/* ── Edit Panel ── */
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.5);
+  z-index: 100;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s;
+}
+.overlay.open { opacity: 1; pointer-events: all; }
+
+.panel {
+  position: fixed;
+  top: 0; right: 0;
+  width: var(--panel-w);
+  height: 100vh;
+  background: var(--surface);
+  border-left: 1px solid var(--border);
+  z-index: 101;
+  display: flex;
+  flex-direction: column;
+  transform: translateX(100%);
+  transition: transform .25s cubic-bezier(.4,0,.2,1);
+  overflow: hidden;
+}
+.panel.open { transform: translateX(0); }
+
+.panel-header {
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-shrink: 0;
+}
+.panel-title {
+  font-family: monospace;
+  font-size: 15px;
+  font-weight: 600;
+}
+.panel-close {
+  width: 28px; height: 28px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  color: var(--dim);
+  font-size: 14px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+}
+.panel-close:hover { color: var(--text); border-color: var(--border2); }
+
+.panel-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.panel-section-title {
+  font-size: 9px;
+  font-family: monospace;
+  color: var(--dim);
+  text-transform: uppercase;
+  letter-spacing: .1em;
+  margin-bottom: 8px;
+}
+
+.field-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.field-label { font-size: 12px; color: var(--text); }
+.field-sublabel { font-size: 10px; color: var(--dim); }
+
+.toggle-switch {
+  width: 38px; height: 20px;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.toggle-switch.on { background: var(--amcs); border-color: var(--amcs); }
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 14px; height: 14px;
+  background: var(--dim);
+  border-radius: 50%;
+  transition: all .15s;
+}
+.toggle-switch.on::after { left: 20px; background: #fff; }
+
+.num-input {
+  width: 70px;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 5px;
+  color: var(--text);
+  font-family: monospace;
+  font-size: 13px;
+  padding: 4px 8px;
+  text-align: right;
+}
+.num-input:focus { outline: none; border-color: var(--amcs); }
+
+.radio-row { display: flex; gap: 6px; }
+.radio-opt {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  color: var(--dim);
+  font-size: 11px;
+  font-family: monospace;
+  padding: 3px 9px;
+  cursor: pointer;
+  transition: all .15s;
+}
+.radio-opt.sel {
+  background: rgba(59,130,246,.15);
+  border-color: var(--amcs);
+  color: var(--amcs);
+}
+
+.delete-btn {
+  width: 100%;
+  background: rgba(239,68,68,.1);
+  border: 1px solid rgba(239,68,68,.3);
+  color: #f87171;
+  font-family: monospace;
+  font-size: 11px;
+  padding: 8px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all .15s;
+  margin-top: 8px;
+}
+.delete-btn:hover { background: rgba(239,68,68,.2); }
+
+.info-box {
+  padding: 8px 10px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  font-size: 10px;
+  color: var(--dim);
+  line-height: 1.6;
+}
+.info-box strong { color: var(--text); font-weight: 500; }
+
+hr.panel-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+
+/* ── Mobile mode ── */
+.mobile-btn {
+  background: transparent;
+  border: 1px solid var(--border2);
+  color: var(--dim);
+  font-size: 15px;
+  width: 32px; height: 32px;
+  border-radius: 5px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.mobile-btn.on {
+  background: rgba(167,139,250,.15);
+  border-color: var(--peri);
+  color: var(--peri);
+}
+
+body.mobile .sidebar { display: none; }
+body.mobile .topbar { height: auto; min-height: 52px; flex-wrap: wrap; padding: 8px 12px; gap: 8px; }
+body.mobile .topbar-controls { gap: 8px; }
+body.mobile .setting-group { padding: 5px 8px; }
+body.mobile .seg-btn { font-size: 12px; padding: 5px 10px; }
+body.mobile .toggle-btn { font-size: 12px; padding: 5px 10px; }
+body.mobile .add-btn { font-size: 12px; padding: 5px 10px; }
+body.mobile .grid { grid-template-columns: 1fr; gap: 8px; padding: 0; }
+body.mobile .main { padding: 10px; }
+body.mobile .card-id { font-size: 22px; }
+body.mobile .card-wks-num { font-size: 24px; }
+body.mobile .card-body { padding: 14px; gap: 10px; }
+body.mobile .bar-wrap { height: 20px; }
+body.mobile .bar-seg { font-size: 11px; }
+body.mobile .call-lbl { font-size: 12px; }
+body.mobile .call-days { font-size: 13px; }
+body.mobile .seg-leg-item { font-size: 11px; }
+body.mobile .card-sites { font-size: 12px; }
+body.mobile .card-notes { font-size: 11px; }
+body.mobile .no-call { font-size: 12px; }
+body.mobile .call-section-title { font-size: 11px; }
+body.mobile .card-wks-lbl { font-size: 10px; }
+body.mobile .panel { width: 100vw; }
+body.mobile .leave-id { font-size: 20px; }
+body.mobile .leave-lbl { font-size: 12px; }
+/* Filter bar mobile */
+body.mobile #filter-bar { padding: 6px 12px; gap: 6px; }
+body.mobile #filter-bar .seg-btn { font-size: 12px; padding: 5px 10px; flex: 1; text-align: center; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+  <!-- Top bar -->
+  <div class="topbar">
+    <div class="topbar-title"><span>AM</span> Schedule Modeller</div>
+    <div class="topbar-controls">
+
+      <div class="setting-group">
+        <span class="setting-label">Cap mode</span>
+        <button class="seg-btn" id="cap-senior" onclick="setCapMode('senior')">Senior caps</button>
+        <button class="seg-btn" id="cap-all"    onclick="setCapMode('all')">All caps</button>
+        <button class="seg-btn" id="cap-none"   onclick="setCapMode('none')">No caps</button>
+      </div>
+
+      <div class="setting-group">
+        <span class="setting-label">RJH 2nd doc</span>
+        <button class="toggle-btn" id="seconddoc-btn" onclick="toggleSecondDoc()">
+          <span class="dot"></span><span id="seconddoc-lbl">OFF</span>
+        </button>
+      </div>
+
+    </div>
+    <button class="add-btn" onclick="addPlaceholder()">+ Add member</button>
+    <button class="mobile-btn" id="mobile-btn" onclick="toggleMobile()" title="Mobile view">📱</button>
+  </div>
+
+  <div id="filter-bar" style="background:var(--surface);border-bottom:1px solid var(--border);padding:6px 20px;display:flex;align-items:center;gap:6px;flex-shrink:0">
+    <span style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;margin-right:4px">Filter</span>
+    <button class="seg-btn" id="flt-all"      onclick="setFilter('all')">All</button>
+    <button class="seg-btn" id="flt-amcs"     onclick="setFilter('amcs')">AMCS</button>
+    <button class="seg-btn" id="flt-detox"    onclick="setFilter('detox')">Detox</button>
+    <button class="seg-btn" id="flt-perinatal" onclick="setFilter('perinatal')">Perinatal</button>
+  </div>
+
+  <div class="body-row">
+    <!-- Sidebar -->
+    <div class="sidebar" id="sidebar"></div>
+
+    <!-- Card grid -->
+    <div class="main">
+      <div class="grid" id="grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Overlay + Panel -->
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+<div class="panel" id="panel">
+  <div class="panel-header">
+    <span class="panel-title" id="panel-title">Member settings</span>
+    <button class="panel-close" onclick="closePanel()">✕</button>
+  </div>
+  <div class="panel-body" id="panel-body"></div>
+</div>
+
+<script>
+// ── Palette ──────────────────────────────────────────────────────────────
+const C = {
+  amcs:'#3b82f6', dcore:'#ef4444', dsupp:'#f97316',
+  peri:'#a78bfa', senior:'#f59e0b', newm:'#34d399',
+  faint:'#1a3554', dim:'#5a82a6', gold:'#fbbf24',
+};
+
+// ── Initial roster ────────────────────────────────────────────────────────
+let members = [
+  { id:'RH',  label:'RH',  real:true,  onLeave:false, senior:true,
+    amcs:true,  detoxCore:true,  detoxSupp:false, peri:false,
+    site:'both',   noRJHFirst:false,
+    wkCap:18, weCap:10, notes:'Never Saturdays · Detox call covers call obligation' },
+  { id:'KW',  label:'KW',  real:true,  onLeave:false, senior:true,
+    amcs:true,  detoxCore:false, detoxSupp:false, peri:false,
+    site:'rjh',    noRJHFirst:false,
+    wkCap:10, weCap:6,  notes:'RJH only' },
+  { id:'DM',  label:'DM',  real:true,  onLeave:false, senior:true,
+    amcs:true,  detoxCore:false, detoxSupp:false, peri:false,
+    site:'vgh',    noRJHFirst:true,
+    wkCap:9,  weCap:12, notes:'VGH only · retiring' },
+  { id:'TJ',  label:'TJ',  real:true,  onLeave:false, senior:true,
+    amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
+    site:'rjh',    noRJHFirst:false,
+    wkCap:20, weCap:20, notes:'RJH only' },
+  { id:'AJ',  label:'AJ',  real:true,  onLeave:false, senior:true,
+    amcs:true,  detoxCore:true,  detoxSupp:false, peri:false,
+    site:'vgh',    noRJHFirst:true,
+    wkCap:40, weCap:52, notes:'VGH only · 52 Detox call days flat' },
+  { id:'DR',  label:'DR',  real:true,  onLeave:false, senior:false,
+    amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
+    site:'both',   noRJHFirst:false,
+    wkCap:24, weCap:24, notes:'' },
+  { id:'KR',  label:'KR',  real:true,  onLeave:false, senior:true,
+    amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
+    site:'both',   noRJHFirst:false,
+    wkCap:11, weCap:12, notes:'AMCS + Detox Support' },
+  { id:'MTB', label:'MTB', real:true,  onLeave:false, senior:false,
+    amcs:true,  detoxCore:false, detoxSupp:true,  peri:true,
+    site:'both',   noRJHFirst:false,
+    wkCap:29, weCap:12, notes:'Triple service · 12d AMCS/Detox call cap' },
+  { id:'AR',  label:'AR',  real:true,  onLeave:false, senior:true,
+    amcs:true,  detoxCore:false, detoxSupp:true,  peri:true,
+    site:'both',   noRJHFirst:false,
+    wkCap:24, weCap:6,  notes:'Triple service · 6d AMCS/Detox call cap' },
+  { id:'CH',  label:'CH',  real:true,  onLeave:false, senior:false,
+    amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
+    site:'both',   noRJHFirst:false,
+    wkCap:13, weCap:26, notes:'' },
+  { id:'NS',  label:'NS',  real:true,  onLeave:false, senior:true,
+    amcs:true,  detoxCore:false, detoxSupp:false, peri:false,
+    site:'rjh',    noRJHFirst:false,
+    wkCap:2,  weCap:10, notes:'RJH only' },
+  { id:'AP',  label:'AP',  real:true,  onLeave:false, senior:false,
+    amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
+    site:'both',   noRJHFirst:false,
+    wkCap:24, weCap:24, notes:'Assumed cap' },
+  { id:'AW',  label:'AW',  real:true,  onLeave:false, senior:false,
+    amcs:false, detoxCore:false, detoxSupp:false, peri:true,
+    site:'hwh',    noRJHFirst:false,
+    wkCap:13, weCap:0,  notes:'HerWayHome · Perinatal call included' },
+  { id:'GW',  label:'GW',  real:true,  onLeave:false, senior:false,
+    amcs:false, detoxCore:false, detoxSupp:false, peri:true,
+    site:'hwh',    noRJHFirst:false,
+    wkCap:0,  weCap:0,  notes:'HerWayHome · Perinatal group member · no weeks or call' },
+  { id:'KM',  label:'KM',  real:true,  onLeave:false, senior:false,
+    amcs:false, detoxCore:false, detoxSupp:false, peri:true,
+    site:'hwh',    noRJHFirst:false,
+    wkCap:13, weCap:0,  notes:'HerWayHome · Perinatal only' },
+  { id:'SL',  label:'SL',  real:true,  onLeave:true,  senior:false,
+    amcs:true,  detoxCore:false, detoxSupp:false, peri:true,
+    site:'both',   noRJHFirst:false,
+    wkCap:0,  weCap:0,  notes:'Indefinite leave' },
+  { id:'MW',  label:'MW',  real:true,  onLeave:true,  senior:false,
+    amcs:true,  detoxCore:false, detoxSupp:false, peri:true,
+    site:'both',   noRJHFirst:false,
+    wkCap:0,  weCap:0,  notes:'On leave' },
+  { id:'AN',  label:'AN',  real:true,  onLeave:true,  senior:false,
+    amcs:true,  detoxCore:false, detoxSupp:false, peri:false,
+    site:'both',   noRJHFirst:false,
+    wkCap:0,  weCap:0,  notes:'On leave' },
+];
+
+// ── Global state ─────────────────────────────────────────────────────────
+let capMode    = 'all';   // 'senior' | 'all' | 'none'
+let secondDoc  = false;
+let placeholderCount = 0;
+let editingId  = null;
+let activeFilter = 'all';
+let mobileMode = true;
+
+function toggleMobile() {
+  mobileMode = !mobileMode;
+  document.body.classList.toggle('mobile', mobileMode);
+  const btn = document.getElementById('mobile-btn');
+  if (btn) btn.classList.toggle('on', mobileMode);
+} // 'all' | 'amcs' | 'detox' | 'perinatal'
+
+function setFilter(f) {
+  activeFilter = f;
+  ['all','amcs','detox','perinatal'].forEach(k => {
+    const btn = document.getElementById('flt-' + k);
+    if (btn) btn.classList.toggle('active', k === f);
+  });
+  render();
+}
+
+// ── Core calculation engine ───────────────────────────────────────────────
+function compute() {
+  const AMCS_DEMAND  = secondDoc ? 156 : 104;
+  const DETOX_DEMAND = 52;
+  const PERI_DEMAND  = 52;
+  const CALL_POOL    = 116;
+
+  const active = members.filter(m => !m.onLeave);
+
+  // ── Perinatal weeks ─────────────────────────────────────────────────
+  const periMembers = active.filter(m => m.peri);
+  // Only schedule weeks/call for peri members with wkCap > 0
+  // (members with wkCap=0 are in the group but not taking weeks or call)
+  const periScheduled = periMembers.filter(m => m.wkCap > 0);
+  const periWks = {};
+  periScheduled.forEach(m => { periWks[m.id] = 13; });
+
+  // ── Detox weeks ──────────────────────────────────────────────────────
+  const coreMembers  = active.filter(m => m.detoxCore);
+  const suppMembers  = active.filter(m => m.detoxSupp);
+
+  // Fixed core allocations: AJ=26, RH=13 (or proportionate if other core members added)
+  const detoxWks = {};
+  const coreFixed = { 'AJ': 26, 'RH': 13 };
+  let coreTotal = 0;
+  coreMembers.forEach(m => {
+    const w = coreFixed[m.id] || Math.round(DETOX_DEMAND / coreMembers.length);
+    detoxWks[m.id] = w;
+    coreTotal += w;
+  });
+
+  // Support members share the remaining deficit
+  const suppDeficit = Math.max(0, DETOX_DEMAND - coreTotal);
+  if (suppMembers.length > 0 && suppDeficit > 0) {
+    const base = Math.floor(suppDeficit / suppMembers.length);
+    const rem  = suppDeficit % suppMembers.length;
+    suppMembers.forEach((m, i) => {
+      detoxWks[m.id] = (detoxWks[m.id] || 0) + base + (i < rem ? 1 : 0);
+    });
+  }
+
+  // ── AMCS weeks ───────────────────────────────────────────────────────
+  const amcsMembers = active.filter(m => m.amcs);
+  const amcsWks = {};
+
+  if (amcsMembers.length > 0) {
+    // Each member's credit from Detox + Peri
+    const credit = {};
+    amcsMembers.forEach(m => {
+      credit[m.id] = (detoxWks[m.id] || 0) + (periWks[m.id] || 0);
+    });
+
+    // Base obligation = total demand / number of eligible members
+    const baseObligation = AMCS_DEMAND / amcsMembers.length;
+
+    // Reduced obligation after credit
+    const obligation = {};
+    amcsMembers.forEach(m => {
+      obligation[m.id] = Math.max(0, baseObligation - credit[m.id]);
+    });
+
+    // Assign whole weeks using largest-remainder method:
+    // floor each obligation, then give +1 to those with the biggest fractional parts
+    // until demand is exactly met. Guarantees sum == AMCS_DEMAND.
+    const oblFrac = {};
+    amcsMembers.forEach(m => { oblFrac[m.id] = obligation[m.id] - Math.floor(obligation[m.id]); });
+    let totalAssigned = 0;
+    amcsMembers.forEach(m => {
+      amcsWks[m.id] = Math.floor(obligation[m.id]);
+      totalAssigned += amcsWks[m.id];
+    });
+    let remaining = AMCS_DEMAND - totalAssigned;
+    // Sort by fractional remainder descending — give +1 to the most "deserving"
+    const sortedByFrac = [...amcsMembers].sort((a, b) => oblFrac[b.id] - oblFrac[a.id]);
+    for (let i = 0; remaining > 0; i++, remaining--) {
+      amcsWks[sortedByFrac[i % sortedByFrac.length].id]++;
+    }
+
+    // Step 3: Apply caps if active
+    if (capMode !== 'none') {
+      let capped = false;
+      amcsMembers.forEach(m => {
+        const capActive = capMode === 'all' || (capMode === 'senior' && m.senior);
+        if (capActive) {
+          const maxAmcs = Math.max(0, m.wkCap - credit[m.id]);
+          if (amcsWks[m.id] > maxAmcs) {
+            amcsWks[m.id] = maxAmcs;
+            capped = true;
+          }
+        }
+      });
+
+      // If caps caused under-coverage, redistribute to uncapped members.
+      // Rebuild the eligible list on every iteration to avoid overshooting caps.
+      if (capped) {
+        const actualTotal = amcsMembers.reduce((s, m) => s + (amcsWks[m.id] || 0), 0);
+        let stillNeeded = AMCS_DEMAND - actualTotal;
+        let ui = 0;
+        let safety = stillNeeded * amcsMembers.length + 1;
+        while (stillNeeded > 0 && safety-- > 0) {
+          const uncapped = amcsMembers.filter(m => {
+            const capActive = capMode === 'all' || (capMode === 'senior' && m.senior);
+            const maxAmcs = Math.max(0, m.wkCap - credit[m.id]);
+            // Uncapped members have no limit; capped members can still absorb if below max
+            return !capActive || (amcsWks[m.id] || 0) < maxAmcs;
+          });
+          if (uncapped.length === 0) break;
+          uncapped.sort((a,b) => (amcsWks[a.id]||0) - (amcsWks[b.id]||0));
+          amcsWks[uncapped[ui % uncapped.length].id]++;
+          stillNeeded--;
+          ui++;
+        }
+      }
+
+      // Hard clamp: ensure no capped member ever exceeds their cap (guards against rounding)
+      amcsMembers.forEach(m => {
+        const capActive = capMode === 'all' || (capMode === 'senior' && m.senior);
+        if (capActive) {
+          const maxAmcs = Math.max(0, m.wkCap - credit[m.id]);
+          if ((amcsWks[m.id] || 0) > maxAmcs) amcsWks[m.id] = maxAmcs;
+        }
+      });
+    }
+  }
+
+  // ── Call / weekend+STAT calculations ────────────────────────────────
+  // Rate = 116 / total weeks in each pool
+  const periCallMembers = periScheduled; // only peri members taking weeks/call
+
+  // ── Largest-remainder distributor ────────────────────────────────────
+  // Distributes 'total' days exactly proportional to wksMap, respecting caps
+  // when capFn is provided. Returns a map of id → days.
+  function distributeCall(wksMap, total, capFn) {
+    const ids = Object.keys(wksMap).filter(id => wksMap[id] > 0);
+    if (ids.length === 0 || total === 0) return {};
+    const totalWks = ids.reduce((s, id) => s + wksMap[id], 0);
+    // Compute exact proportional share
+    const exact = {};
+    ids.forEach(id => { exact[id] = total * wksMap[id] / totalWks; });
+    // Floor and collect remainders
+    const result = {};
+    ids.forEach(id => { result[id] = Math.floor(exact[id]); });
+    let leftover = total - ids.reduce((s, id) => s + result[id], 0);
+    // Give +1 to those with largest fractional remainder
+    ids.sort((a, b) => (exact[b] - result[b]) - (exact[a] - result[a]));
+    for (let i = 0; leftover > 0; i++, leftover--) {
+      result[ids[i % ids.length]]++;
+    }
+    // Apply caps if provided, redistributing capped days to others
+    if (capFn) {
+      let surplus = 0;
+      ids.forEach(id => {
+        const cap = capFn(id, result[id]);
+        if (cap < result[id]) { surplus += result[id] - cap; result[id] = cap; }
+      });
+      if (surplus > 0) {
+        let ui = 0;
+        let safetyLimit = surplus * ids.length + 1;
+        while (surplus > 0 && safetyLimit-- > 0) {
+          // Recheck each iteration — don't use stale uncapped list
+          const uncapped = ids.filter(id => capFn(id, result[id] + 1) > result[id]);
+          if (uncapped.length === 0) break; // nobody can absorb more
+          uncapped.sort((a, b) => result[a] - result[b]);
+          result[uncapped[ui % uncapped.length]]++;
+          surplus--; ui++;
+        }
+      }
+    }
+    return result;
+  }
+
+  // Per-member call
+  const callAmcs = {}, callDetox = {}, callPeri = {};
+
+  // AMCS call: all AMCS members with scheduled AMCS weeks, including RH and AJ.
+  // Everyone contributes proportionately to each call pool they participate in.
+  // Caps (when active) limit the combined AMCS+Detox total per member.
+  const amcsCallPool = {};
+  amcsMembers.forEach(m => {
+    if ((amcsWks[m.id] || 0) > 0) amcsCallPool[m.id] = amcsWks[m.id];
+  });
+  const amcsCapFn = capMode !== 'none' ? (id, days) => {
+    const m = amcsMembers.find(m => m.id === id);
+    const capActive = capMode === 'all' || (capMode === 'senior' && m.senior);
+    if (!capActive) return days;
+    // AJ's flat 52 Detox days count toward his combined cap.
+    // For all other detox members, Detox call will be accounted in dcap instead —
+    // AMCS cap here uses the full weCap; dcap subtracts alreadyAmcs.
+    const alreadyDetox = id === 'AJ' ? 52 : 0;
+    return Math.min(days, Math.max(0, m.weCap - alreadyDetox));
+  } : null;
+  const amcsCallResult = distributeCall(amcsCallPool, CALL_POOL, amcsCapFn);
+  amcsMembers.forEach(m => { callAmcs[m.id] = amcsCallResult[m.id] || 0; });
+
+  // Detox call: distribute 116 days proportionate to ALL detox weeks (including AJ),
+  // then override AJ with his flat 52. This prevents RH from being assigned an
+  // outsized share just because AJ is excluded from the pool denominator.
+  const detoxCallPool = {};
+  active.forEach(m => {
+    if ((detoxWks[m.id] || 0) > 0) detoxCallPool[m.id] = detoxWks[m.id];
+  });
+  const detoxCapFn = capMode !== 'none' ? (id, days) => {
+    if (id === 'AJ') return days; // AJ handled separately
+    const m = active.find(m => m.id === id);
+    const capActive = capMode === 'all' || (capMode === 'senior' && m.senior);
+    if (!capActive) return days;
+    const alreadyAmcs = callAmcs[id] || 0;
+    return Math.min(days, Math.max(0, m.weCap - alreadyAmcs));
+  } : null;
+  const detoxCallResult = distributeCall(detoxCallPool, CALL_POOL, detoxCapFn);
+  active.forEach(m => {
+    if (m.id === 'AJ') { callDetox[m.id] = 52; return; } // flat override
+    callDetox[m.id] = detoxCallResult[m.id] || 0;
+  });
+
+  // Peri call: proportionate across all peri members, never capped
+  const periCallPool = {};
+  periCallMembers.forEach(m => { periCallPool[m.id] = periWks[m.id] || 13; });
+  const periCallResult = distributeCall(periCallPool, CALL_POOL, null);
+  periCallMembers.forEach(m => { callPeri[m.id] = periCallResult[m.id] || 0; });
+
+  // ── Build result objects ──────────────────────────────────────────────
+  const results = {};
+  active.forEach(m => {
+    const aw = amcsWks[m.id]  || 0;
+    const dw = detoxWks[m.id] || 0;
+    const pw = periWks[m.id]  || 0;
+    const totalWks  = aw + dw + pw;
+    const ca = callAmcs[m.id]  || 0;
+    const cd = callDetox[m.id] || 0;
+    const cp = callPeri[m.id]  || 0;
+    const totalCall = ca + cd + cp;
+
+    results[m.id] = { aw, dw, pw, totalWks, ca, cd, cp, totalCall };
+  });
+
+  // ── Service totals for sidebar ────────────────────────────────────────
+  const amcsSupply  = amcsMembers.reduce((s, m) => s + (amcsWks[m.id] || 0), 0);
+  const detoxSupply = Object.values(detoxWks).reduce((s, v) => s + v, 0);
+  const periSupply  = periScheduled.reduce((s, m) => s + (periWks[m.id] || 0), 0);
+
+  // ── Service coverage for sidebar ─────────────────────────────────────
+  // Show actual distributed call totals (post-redistribution).
+  // In Senior Caps mode, non-senior members absorb senior surplus → full 116 coverage.
+  // In All Caps mode, redistribution also fills to 116 unless pool is truly exhausted.
+  // AMCS call: sum actual assigned values (excl RH whose obligation is covered by Detox call)
+  const amcsCallSupplied = Math.round(amcsMembers.reduce((s, m) => s + (callAmcs[m.id] || 0), 0));
+
+  // Detox call: include AJ's flat 52 in total. Demand = full CALL_POOL (116).
+  const detoxNonAjTarget = CALL_POOL;
+  const detoxCallSupplied = Math.round(active.reduce((s, m) => s + (callDetox[m.id] || 0), 0));
+
+  // Peri: always fully covered (no caps on peri call)
+  const periCallSupplied = CALL_POOL;
+
+  return {
+    results,
+    demands: { amcs: AMCS_DEMAND, detox: DETOX_DEMAND, peri: PERI_DEMAND, call: CALL_POOL },
+    supply:  { amcs: amcsSupply, detox: detoxSupply, peri: periSupply },
+    callSupply: { amcs: amcsCallSupplied, detox: detoxCallSupplied, peri: periCallSupplied },
+    detoxNonAjTarget,
+  };
+}
+
+
+
+// ── Primary colour per member ─────────────────────────────────────────────
+function primaryColor(m) {
+  if (!m.amcs && !m.detoxCore && !m.detoxSupp && !m.peri) return C.faint;
+  if (m.peri && !m.amcs && !m.detoxCore && !m.detoxSupp) return C.peri;
+  if (m.detoxCore) return C.dcore;
+  if (m.senior) return C.senior;
+  return C.amcs;
+}
+
+// ── Render cards ─────────────────────────────────────────────────────────
+function renderGrid(calc) {
+  const grid = document.getElementById('grid');
+  grid.innerHTML = '';
+
+  const visibleMembers = members.filter(m => {
+    if (activeFilter === 'all') return true;
+    if (m.onLeave) return true; // always show leave cards
+    if (activeFilter === 'amcs')      return m.amcs;
+    if (activeFilter === 'detox')     return m.detoxCore || m.detoxSupp;
+    if (activeFilter === 'perinatal') return m.peri;
+    return true;
+  }).sort((a, b) => {
+    // On-leave cards always last
+    if (a.onLeave !== b.onLeave) return a.onLeave ? 1 : -1;
+    const ra = calc.results[a.id] || { totalWks: 0 };
+    const rb = calc.results[b.id] || { totalWks: 0 };
+    return rb.totalWks - ra.totalWks;
+  });
+
+  visibleMembers.forEach(m => {
+    const el = document.createElement('div');
+
+    if (m.onLeave) {
+      el.className = 'card on-leave';
+      el.innerHTML = `
+        <div class="card-stripe" style="background:${C.faint}"></div>
+        <div class="leave-card-body">
+          <div class="leave-id">${m.label}</div>
+          <div class="leave-lbl">On leave — not scheduled</div>
+          ${m.notes ? `<div style="font-size:9px;color:var(--muted);margin-top:2px">${m.notes}</div>` : ''}
+        </div>`;
+      el.onclick = () => openPanel(m.id);
+      grid.appendChild(el);
+      return;
+    }
+
+    const r = calc.results[m.id] || { aw:0, dw:0, pw:0, totalWks:0, ca:0, cd:0, cp:0, totalCall:0 };
+    const pc = primaryColor(m);
+    const free = 52 - r.totalWks;
+
+    // Build segments
+    const segs = [];
+    if (r.dw > 0) segs.push({ color: m.detoxCore ? C.dcore : C.dsupp, wks: r.dw, label: m.detoxCore ? 'Detox Core' : 'Detox Supp' });
+    if (r.aw > 0) segs.push({ color: C.amcs, wks: r.aw, label: 'AMCS' });
+    if (r.pw > 0) segs.push({ color: C.peri, wks: r.pw, label: 'Perinatal' });
+
+    const barSegs = segs.map(s => {
+      const pct = (s.wks / 52 * 100).toFixed(2);
+      return `<div class="bar-seg" style="width:${pct}%;background:${s.color};min-width:${s.wks>0?10:0}px">${s.wks > 3 ? s.wks : ''}</div>`;
+    }).join('');
+    const freeBar = free > 0 ? `<div class="bar-free"><span>${free}w free</span></div>` : '';
+
+    const legItems = segs.map(s =>
+      `<div class="seg-leg-item"><div class="seg-dot" style="background:${s.color}"></div>${s.label} ${s.wks}w</div>`
+    ).join('');
+
+    // Call rows
+    const callEntries = [];
+    // All members: AMCS and Detox call count equally toward service requirements.
+    // AJ has a flat 52 Detox call days. RH has 0 AMCS call (covered by Detox).
+    if (r.ca > 0) callEntries.push({ label: 'AMCS call', days: r.ca, color: C.amcs });
+    if (r.cd > 0) {
+      const detoxLabel = m.id === 'AJ' ? 'Detox call (flat 52)' : 'Detox call';
+      callEntries.push({ label: detoxLabel, days: r.cd, color: m.detoxCore ? C.dcore : C.dsupp });
+    }
+    if (r.cp > 0) callEntries.push({ label: 'Perinatal call', days: r.cp, color: C.peri });
+
+    const callRows = callEntries.length === 0
+      ? `<div class="no-call">No weekend/STAT call obligations</div>`
+      : callEntries.map(e =>
+          `<div class="call-row">
+            <div class="call-row-left">
+              <div class="call-dot" style="background:${e.color}"></div>
+              <span class="call-lbl">${e.label}</span>
+            </div>
+            <span class="call-days">~${e.days}d</span>
+          </div>`
+        ).join('') + (r.totalCall > 0 ?
+          `<div class="call-total-row">
+            <span class="call-total-lbl">Total weekends/STATs/yr</span>
+            <span class="call-total-val">~${r.totalCall}d</span>
+          </div>` : '');
+
+    // Badges
+    const showCaps = capMode !== 'none' && (capMode === 'all' || (capMode === 'senior' && m.senior));
+    const badges = [
+      m.senior ? `<span class="badge" style="background:${C.senior}18;color:${C.senior};border:1px solid ${C.senior}40">${m.senior ? 'SENIOR' : ''}</span>` : '',
+      !m.real  ? `<span class="badge" style="background:${C.newm}18;color:${C.newm};border:1px solid ${C.newm}40">NEW</span>` : '',
+    ].filter(Boolean).join('');
+
+    const capPills = showCaps ? `
+      <div class="cap-pills">
+        <span class="cap-pill" style="background:#3b82f618;color:#3b82f6;border:1px solid #3b82f640">max ${m.wkCap}w</span>
+        <span class="cap-pill" style="background:#f59e0b18;color:#f59e0b;border:1px solid #f59e0b40">max ${m.weCap} w/e</span>
+      </div>` : '';
+
+    const siteLabel = m.site === 'rjh' ? 'RJH only' :
+                      m.site === 'vgh' ? 'VGH only' :
+                      m.site === 'hwh' ? 'HerWayHome' : 'RJH + VGH';
+
+
+    el.className = 'card';
+    el.style.borderTopColor = pc + '80';
+    el.innerHTML = `
+      <div class="card-stripe" style="background:${pc}"></div>
+      <div class="card-body">
+        <div class="card-id-row">
+          <div class="card-id-left">
+            <div style="display:flex;align-items:center;gap:6px">${badges.length ? `<span class="card-id" style="color:${pc}">${m.label}</span>${badges}` : `<span class="card-id" style="color:${pc}">${m.label}</span>`}</div>
+            ${capPills}
+          </div>
+          <div class="card-wks">
+            <div class="card-wks-num">${r.totalWks}</div>
+            <div class="card-wks-lbl">WKS SCHED</div>
+          </div>
+        </div>
+        <div class="card-sites">${siteLabel}</div>
+        <div>
+          <div class="bar-wrap">${barSegs}${freeBar}</div>
+          <div class="seg-legend" style="margin-top:5px">${legItems || '<span style="font-size:9px;color:var(--muted)">No services assigned</span>'}</div>
+        </div>
+        <div class="card-divider"></div>
+        <div>
+          <div class="call-section-title">Weekends / STATs</div>
+          ${callRows}
+        </div>
+        ${m.notes ? `<div class="card-notes"><span style="font-size:9px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:3px">Notes</span>${m.notes}</div>` : ''}
+      </div>`;
+    el.onclick = () => openPanel(m.id);
+    grid.appendChild(el);
+  });
+}
+
+
+
+// ── Render sidebar ────────────────────────────────────────────────────────
+function renderSidebar(calc) {
+  const { demands, supply, callSupply, detoxNonAjTarget } = calc;
+  const sb = document.getElementById('sidebar');
+
+  function svcBlock(label, supplied, demanded, callSup, callDemand, color, callNote) {
+    const wkPct   = demanded > 0 ? Math.min(100, supplied / demanded * 100) : 0;
+    const callPct = callDemand > 0 ? Math.min(100, callSup / callDemand * 100) : 0;
+    const wkColor   = supplied >= demanded ? '#22c55e' : (supplied >= demanded * .85 ? '#f59e0b' : '#ef4444');
+    const callColor = callSup >= callDemand ? '#22c55e' : (callSup >= callDemand * .85 ? '#f59e0b' : '#ef4444');
+    const suppR = Math.round(supplied);
+    const callR = Math.round(callSup);
+
+    return `
+      <div class="deficit-item">
+        <div class="deficit-svc" style="color:${color}">${label}</div>
+        <div style="font-size:9px;color:var(--dim);margin-bottom:2px">Weeks</div>
+        <div class="deficit-bar-wrap">
+          <div class="deficit-bar-fill" style="width:${wkPct}%;background:${wkColor}"></div>
+        </div>
+        <div class="deficit-nums">
+          <span style="color:${wkColor}">${suppR}</span>
+          <span style="color:var(--muted)">/ ${demanded}</span>
+        </div>
+        <div style="font-size:9px;color:var(--dim);margin-top:4px;margin-bottom:2px">W/E + STATs${callNote ? ` <span style="color:var(--muted)">${callNote}</span>` : ''}</div>
+        <div class="deficit-bar-wrap">
+          <div class="deficit-bar-fill" style="width:${callPct}%;background:${callColor}"></div>
+        </div>
+        <div class="deficit-nums">
+          <span style="color:${callColor}">${callR}</span>
+          <span style="color:var(--muted)">/ ${callDemand}</span>
+        </div>
+      </div>`;
+  }
+
+  // Build rules text based on current settings
+  const capRules = capMode === 'none'
+    ? ['No individual caps are applied.', 'All AMCS weeks and weekends/STATs are divided equally among eligible members to meet demand exactly.']
+    : capMode === 'senior'
+    ? ['Senior member week and weekend/STAT caps are respected.', 'Any weeks or call days that senior caps cannot cover are redistributed to non-senior members.', 'Non-senior members have no caps enforced.']
+    : ['All member week and weekend/STAT caps are respected.', 'Surplus from capped members is redistributed to those with remaining capacity.', 'Weeks and call days are always fully covered if pool capacity allows.'];
+
+  const detoxRules = [
+    `Detox Core: AJ = 26 wks, RH = 13 wks (fixed).`,
+    `Detox Support: remaining ${demands.detox - 39} wks shared equally among support members.`,
+    'Detox and AMCS call caps are combined — Detox call days count toward the combined call cap.',
+    'AJ: flat 52 Detox call days. Also included in AMCS call pool proportionate to AMCS weeks worked.',
+    'Detox and AMCS call are interchangeable — all call days count equally toward the combined service obligation.'
+  ];
+
+  const amcsRules = [
+    `AMCS demand: ${demands.amcs} wks/yr (${secondDoc ? 'RJH first + second doc + VGH' : 'RJH first doc + VGH'}).`,
+    'Base obligation = demand ÷ eligible members. Detox and Perinatal weeks credited 1-for-1.',
+    'Whole weeks assigned via largest-remainder method.',
+    'Call pool: 116 weekend/STAT days/yr, distributed proportionate to weeks worked.'
+  ];
+
+  const periRules = [
+    'Fixed 13 wks/yr each for AW, KM, AR, MTB.',
+    '116 weekend/STAT days/yr split equally across all 4 Perinatal members.',
+    'Perinatal call caps are never enforced.'
+  ];
+
+  function ruleItem(text) {
+    return `<div style="display:flex;gap:6px;margin-bottom:5px">
+      <span style="color:var(--muted);flex-shrink:0;margin-top:1px">·</span>
+      <span style="font-size:10px;color:var(--dim);line-height:1.5">${text}</span>
+    </div>`;
+  }
+
+  function ruleSection(title, color, rules) {
+    return `<div style="margin-bottom:12px">
+      <div style="font-size:9px;color:${color};text-transform:uppercase;letter-spacing:.08em;font-family:monospace;margin-bottom:5px">${title}</div>
+      ${rules.map(ruleItem).join('')}
+    </div>`;
+  }
+
+  sb.innerHTML = `
+    <div>
+      <div class="sidebar-section-title">Service coverage</div>
+      ${svcBlock('AMCS',      supply.amcs,  demands.amcs,  callSupply.amcs,  demands.call,      C.amcs,  '')}
+      ${svcBlock('Detox',     supply.detox, demands.detox, callSupply.detox, detoxNonAjTarget,  C.dcore, '(excl AJ)')}
+      ${svcBlock('Perinatal', supply.peri,  demands.peri,  callSupply.peri,  demands.call,      C.peri,  '')}
+    </div>
+    <div>
+      <div class="sidebar-section-title">Model</div>
+      <div class="stat-block">
+        <label>AMCS demand</label>
+        <div class="stat-val" style="color:${C.amcs}">${demands.amcs} wks</div>
+      </div>
+      <div class="stat-block">
+        <label>Cap mode</label>
+        <div class="stat-val" style="color:${C.senior}">${capMode === 'senior' ? 'Senior caps' : capMode === 'all' ? 'All caps' : 'No caps'}</div>
+      </div>
+      <div class="stat-block">
+        <label>RJH 2nd doc</label>
+        <div class="stat-val" style="color:${secondDoc ? C.amcs : C.dim}">${secondDoc ? 'On' : 'Off'}</div>
+      </div>
+      <div class="stat-block">
+        <label>Active members</label>
+        <div class="stat-val">${members.filter(m => !m.onLeave && (m.amcs||m.detoxCore||m.detoxSupp||m.peri)).length}</div>
+      </div>
+    </div>
+    <div>
+      <div class="sidebar-section-title">Scheduling rules</div>
+      ${ruleSection('Cap mode', C.senior, capRules)}
+      ${ruleSection('AMCS', C.amcs, amcsRules)}
+      ${ruleSection('Detox', C.dcore, detoxRules)}
+      ${ruleSection('Perinatal', C.peri, periRules)}
+    </div>`;
+}
+
+// ── Full render ───────────────────────────────────────────────────────────
+function render() {
+  ['all','amcs','detox','perinatal'].forEach(k => {
+    const btn = document.getElementById('flt-' + k);
+    if (btn) btn.classList.toggle('active', k === activeFilter);
+  });
+  const calc = compute();
+  renderGrid(calc);
+  renderSidebar(calc);
+  // Update topbar buttons
+  ['senior','all','none'].forEach(mode => {
+    document.getElementById('cap-' + mode).classList.toggle('active', capMode === mode);
+  });
+  const sdBtn = document.getElementById('seconddoc-btn');
+  sdBtn.classList.toggle('on', secondDoc);
+  document.getElementById('seconddoc-lbl').textContent = secondDoc ? 'ON' : 'OFF';
+}
+
+// ── Global setting handlers ───────────────────────────────────────────────
+function setCapMode(mode) { capMode = mode; render(); }
+function toggleSecondDoc() {
+  secondDoc = !secondDoc;
+  // Auto-update noRJHFirst for DM and AJ when second doc is off
+  ['AJ','DM'].forEach(id => {
+    const m = members.find(m => m.id === id);
+    if (m) m.noRJHFirst = !secondDoc || m.site === 'vgh';
+  });
+  render();
+}
+
+// ── Add placeholder ────────────────────────────────────────────────────────
+function addPlaceholder() {
+  placeholderCount++;
+  const newId = 'N' + placeholderCount;
+  members.push({
+    id: newId, label: newId, real: false, onLeave: false, senior: false,
+    amcs: true, detoxCore: false, detoxSupp: true, peri: false,
+    site: 'both', noRJHFirst: false,
+    wkCap: 20, weCap: 20, notes: 'Placeholder member',
+  });
+  render();
+  openPanel(newId);
+}
+
+// ── Edit panel ────────────────────────────────────────────────────────────
+function openPanel(id) {
+  const m = members.find(m => m.id === id);
+  if (!m) return;
+  editingId = id;
+
+  document.getElementById('panel-title').textContent = m.real ? m.label : `${m.label} (placeholder)`;
+  document.getElementById('panel-body').innerHTML = buildPanelHTML(m);
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closePanel() {
+  document.getElementById('panel').classList.remove('open');
+  document.getElementById('overlay').classList.remove('open');
+  editingId = null;
+}
+
+function buildPanelHTML(m) {
+  const isPlaceholder = !m.real;
+
+  function toggle(label, key, sublabel='') {
+    const on = !!m[key];
+    return `
+      <div class="field-row">
+        <div>
+          <div class="field-label">${label}</div>
+          ${sublabel ? `<div class="field-sublabel">${sublabel}</div>` : ''}
+        </div>
+        <div class="toggle-switch ${on ? 'on' : ''}" onclick="toggleField('${m.id}','${key}')"></div>
+      </div>`;
+  }
+
+  function numField(label, key, sublabel='') {
+    return `
+      <div class="field-row">
+        <div>
+          <div class="field-label">${label}</div>
+          ${sublabel ? `<div class="field-sublabel">${sublabel}</div>` : ''}
+        </div>
+        <input class="num-input" type="number" min="0" max="52" value="${m[key]}"
+          onchange="setNum('${m.id}','${key}',this.value)" />
+      </div>`;
+  }
+
+  function radioField(label, key, options) {
+    const opts = options.map(([val, lbl]) =>
+      `<div class="radio-opt ${m[key]===val?'sel':''}" onclick="setRadio('${m.id}','${key}','${val}')">${lbl}</div>`
+    ).join('');
+    return `
+      <div style="margin-bottom:8px">
+        <div class="field-label" style="margin-bottom:5px">${label}</div>
+        <div class="radio-row">${opts}</div>
+      </div>`;
+  }
+
+  const calc = compute();
+  const r = calc.results[m.id] || { aw:0, dw:0, pw:0, totalWks:0, ca:0, cd:0, cp:0, totalCall:0 };
+
+  return `
+    <!-- Current allocation (read-only) -->
+    <div>
+      <div class="panel-section-title">Current allocation</div>
+      <div class="info-box">
+        <strong>Weeks:</strong> ${r.aw} AMCS · ${r.dw} Detox · ${r.pw} Perinatal = <strong>${r.totalWks} total</strong><br>
+        <strong>W/E+STATs:</strong> ${r.ca} AMCS · ${r.cd} Detox · ${r.cp} Perinatal = <strong>~${r.totalCall} total</strong>
+      </div>
+    </div>
+
+    <hr class="panel-divider">
+
+    <!-- Leave toggle -->
+    <div>
+      <div class="panel-section-title">Status</div>
+      ${toggle('On leave', 'onLeave', 'Excludes from all scheduling')}
+    </div>
+
+    <hr class="panel-divider">
+
+    <!-- Services -->
+    <div>
+      <div class="panel-section-title">Service membership</div>
+      ${toggle('AMCS', 'amcs', 'Addiction Medicine Consult Service')}
+      ${toggle('Detox Core', 'detoxCore', 'Fixed Detox weeks (AJ / RH). Mutually exclusive with Support.')}
+      ${toggle('Detox Support', 'detoxSupp', 'Shares Detox deficit. Mutually exclusive with Core.')}
+      ${toggle('Perinatal', 'peri', 'HerWayHome — 13 wks fixed')}
+    </div>
+
+    <hr class="panel-divider">
+
+    <!-- Site -->
+    <div>
+      <div class="panel-section-title">Site preference</div>
+      ${radioField('Site', 'site', [['rjh','RJH only'],['vgh','VGH only'],['both','Both'],['hwh','HWH only']])}
+      ${toggle('No RJH first-doc', 'noRJHFirst', 'Will not cover RJH first-doc slot')}
+    </div>
+
+    <hr class="panel-divider">
+
+    <!-- Seniority & caps -->
+    <div>
+      <div class="panel-section-title">Seniority &amp; caps</div>
+      ${toggle('Senior member', 'senior', '>3 years AMCS service')}
+      ${numField('Week cap', 'wkCap', 'Maximum weeks per year (all services combined)')}
+      ${numField('Weekend/STAT cap', 'weCap', 'Maximum call days per year (AMCS + Detox combined — Perinatal call is uncapped)')}
+      <div style="font-size:9px;color:var(--muted);margin-top:4px">Caps are stored always; respected based on cap mode setting.</div>
+    </div>
+
+    <hr class="panel-divider">
+
+    <!-- Notes -->
+    <div>
+      <div class="panel-section-title">Notes</div>
+      <textarea
+        style="width:100%;background:var(--card);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-size:11px;font-family:system-ui,sans-serif;padding:8px;resize:vertical;min-height:72px;line-height:1.5"
+        placeholder="Scheduling notes, restrictions, preferences…"
+        onchange="setNotes('${m.id}',this.value)"
+        onfocus="this.style.borderColor='var(--amcs)'"
+        onblur="this.style.borderColor='var(--border2)'"
+      >${m.notes || ''}</textarea>
+    </div>
+
+    ${isPlaceholder ? `
+    <hr class="panel-divider">
+    <div>
+      <div class="panel-section-title">Placeholder</div>
+      <button class="delete-btn" onclick="removeMember('${m.id}')">Remove this member</button>
+    </div>` : ''}
+  `;
+}
+
+// ── Panel field handlers ──────────────────────────────────────────────────
+function toggleField(id, key) {
+  const m = members.find(m => m.id === id);
+  if (!m) return;
+  const newVal = !m[key];
+  m[key] = newVal;
+
+  // Mutual exclusivity: Detox Core ↔ Detox Support
+  if (key === 'detoxCore' && newVal) m.detoxSupp = false;
+  if (key === 'detoxSupp' && newVal) m.detoxCore = false;
+
+  render();
+  // Refresh panel
+  document.getElementById('panel-body').innerHTML = buildPanelHTML(m);
+}
+
+function setNum(id, key, val) {
+  const m = members.find(m => m.id === id);
+  if (!m) return;
+  m[key] = Math.max(0, parseInt(val) || 0);
+  render();
+  document.getElementById('panel-body').innerHTML = buildPanelHTML(m);
+}
+
+function setRadio(id, key, val) {
+  const m = members.find(m => m.id === id);
+  if (!m) return;
+  m[key] = val;
+  render();
+  document.getElementById('panel-body').innerHTML = buildPanelHTML(m);
+}
+
+function setNotes(id, val) {
+  const m = members.find(m => m.id === id);
+  if (!m) return;
+  m.notes = val;
+  render();
+}
+
+function removeMember(id) {
+  members = members.filter(m => m.id !== id);
+  closePanel();
+  render();
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────
+document.body.classList.add('mobile');
+render();
+</script>
+</body>
+</html>
