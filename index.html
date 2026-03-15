@@ -764,7 +764,7 @@ let members = [
   { id:'AP',  label:'AP',  real:true,  onLeave:false, senior:false,
     amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
     site:'both',   noRJHFirst:false,
-    wkCap:24, weCap:24, notes:'Assumed cap' },
+    wkCap:12, weCap:24, notes:'' },
   { id:'AW',  label:'AW',  real:true,  onLeave:false, senior:false,
     amcs:false, detoxCore:false, detoxSupp:false, peri:true,
     site:'hwh',    noRJHFirst:false,
@@ -797,7 +797,7 @@ let secondDoc  = false;
 let placeholderCount = 0;
 let editingId  = null;
 let activeFilter = 'all';
-let mobileMode = true;
+let mobileMode = false;
 
 function toggleMobile() {
   mobileMode = !mobileMode;
@@ -1559,7 +1559,6 @@ function removeMember(id) {
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────
-document.body.classList.add('mobile');
 render();
 </script>
 </body>
