@@ -761,7 +761,7 @@ let members = [
     amcs:true,  detoxCore:false, detoxSupp:false, peri:false,
     site:'rjh',    noRJHFirst:false,
     wkCap:2,  weCap:10, notes:'RJH only' },
-  { id:'AP',  label:'AP',  real:true,  onLeave:false, senior:false,
+  { id:'AP',  label:'AP',  real:true,  onLeave:false, senior:true,
     amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
     site:'both',   noRJHFirst:false,
     wkCap:12, weCap:24, notes:'' },
@@ -797,7 +797,7 @@ let secondDoc  = false;
 let placeholderCount = 0;
 let editingId  = null;
 let activeFilter = 'all';
-let mobileMode = false;
+let mobileMode = true;
 
 function toggleMobile() {
   mobileMode = !mobileMode;
@@ -812,7 +812,8 @@ function setFilter(f) {
     const btn = document.getElementById('flt-' + k);
     if (btn) btn.classList.toggle('active', k === f);
   });
-  render();
+  document.body.classList.add('mobile');
+render();
 }
 
 // ── Core calculation engine ───────────────────────────────────────────────
