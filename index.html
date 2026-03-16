@@ -736,7 +736,7 @@ let members = [
   { id:'AJ',  label:'AJ',  real:true,  onLeave:false, senior:true,
     amcs:true,  detoxCore:true,  detoxSupp:false, peri:false,
     site:'vgh',    noRJHFirst:true,
-    wkCap:40, weCap:52, notes:'VGH only · 52 Detox call days flat' },
+    wkCap:40, weCap:57, notes:'VGH only · ~57 Detox call days (half weekends + adjacent STATs)' },
   { id:'DR',  label:'DR',  real:true,  onLeave:false, senior:false,
     amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
     site:'both',   noRJHFirst:false,
@@ -941,100 +941,94 @@ function compute() {
   }
 
   // ── Call / weekend+STAT calculations ────────────────────────────────
-  // Rate = 116 / total weeks in each pool
-  const periCallMembers = periScheduled; // only peri members taking weeks/call
+  // Each service has its own 116-day call pool, distributed proportionate
+  // to weeks worked in that service. Combined cap (weCap) limits AMCS +
+  // Detox together. Deficits are shown honestly if caps prevent full coverage.
+  // Peri call is separate and never capped.
 
-  // ── Largest-remainder distributor ────────────────────────────────────
-  // Distributes 'total' days exactly proportional to wksMap, respecting caps
-  // when capFn is provided. Returns a map of id → days.
-  function distributeCall(wksMap, total, capFn) {
-    const ids = Object.keys(wksMap).filter(id => wksMap[id] > 0);
+  const periCallMembers = periScheduled;
+
+  // Call assignment: start everyone at their cap, then level down from the
+  // highest until the pool is exactly filled. When multiple members are tied
+  // at the highest value, reduce them all by 1 each simultaneously.
+  // This ensures everyone does as much call as they offered, with reductions
+  // falling first on those doing the most.
+  function levelDownCall(capMap, total) {
+    // capMap: { id → max days for this service }
+    const ids = Object.keys(capMap).filter(id => capMap[id] > 0);
     if (ids.length === 0 || total === 0) return {};
-    const totalWks = ids.reduce((s, id) => s + wksMap[id], 0);
-    // Compute exact proportional share
-    const exact = {};
-    ids.forEach(id => { exact[id] = total * wksMap[id] / totalWks; });
-    // Floor and collect remainders
     const result = {};
-    ids.forEach(id => { result[id] = Math.floor(exact[id]); });
-    let leftover = total - ids.reduce((s, id) => s + result[id], 0);
-    // Give +1 to those with largest fractional remainder
-    ids.sort((a, b) => (exact[b] - result[b]) - (exact[a] - result[a]));
-    for (let i = 0; leftover > 0; i++, leftover--) {
-      result[ids[i % ids.length]]++;
-    }
-    // Apply caps if provided, redistributing capped days to others
-    if (capFn) {
-      let surplus = 0;
-      ids.forEach(id => {
-        const cap = capFn(id, result[id]);
-        if (cap < result[id]) { surplus += result[id] - cap; result[id] = cap; }
-      });
-      if (surplus > 0) {
-        let ui = 0;
-        let safetyLimit = surplus * ids.length + 1;
-        while (surplus > 0 && safetyLimit-- > 0) {
-          // Recheck each iteration — don't use stale uncapped list
-          const uncapped = ids.filter(id => capFn(id, result[id] + 1) > result[id]);
-          if (uncapped.length === 0) break; // nobody can absorb more
-          uncapped.sort((a, b) => result[a] - result[b]);
-          result[uncapped[ui % uncapped.length]]++;
-          surplus--; ui++;
+    ids.forEach(id => { result[id] = capMap[id]; });
+    let current = ids.reduce((s, id) => s + result[id], 0);
+    while (current > total) {
+      const maxVal = Math.max(...ids.map(id => result[id]));
+      if (maxVal === 0) break;
+      // Reduce all members at the max by 1 each (ties reduced together)
+      for (const id of ids) {
+        if (result[id] === maxVal && current > total) {
+          result[id]--;
+          current--;
         }
       }
     }
     return result;
   }
 
-  // Per-member call
   const callAmcs = {}, callDetox = {}, callPeri = {};
 
-  // AMCS call: all AMCS members with scheduled AMCS weeks, including RH and AJ.
-  // Everyone contributes proportionately to each call pool they participate in.
-  // Caps (when active) limit the combined AMCS+Detox total per member.
-  const amcsCallPool = {};
+  // ── DETOX call (assigned first) ───────────────────────────────────────
+  // AJ = flat 57. RH = his full weCap from Detox (no AMCS call).
+  // Detox Support members share the remaining 59 days equally.
+  // Assigned before AMCS so support members' detox days are fixed first;
+  // AMCS then uses whatever combined-cap headroom remains.
+  const detoxCapMap = {};
+
+  // RH: full weCap from Detox
+  const rhMember = active.find(m => m.id === 'RH');
+  if (rhMember && (detoxWks['RH'] || 0) > 0) {
+    const rhCapActive = capMode !== 'none' && (capMode === 'all' || (capMode === 'senior' && rhMember.senior));
+    detoxCapMap['RH'] = rhCapActive ? rhMember.weCap : CALL_POOL;
+  }
+
+  // Detox Support: equal shared cap = min positive headroom among members
+  const suppDetoxMembers = active.filter(m => m.detoxSupp);
+  if (suppDetoxMembers.length > 0) {
+    const suppHeadrooms = suppDetoxMembers.map(m => {
+      const capActive = capMode !== 'none' && (capMode === 'all' || (capMode === 'senior' && m.senior));
+      return capActive ? m.weCap : CALL_POOL; // full cap available — Detox is first
+    });
+    const positiveHeadrooms = suppHeadrooms.filter(h => h > 0);
+    const sharedCap = positiveHeadrooms.length > 0 ? Math.min(...positiveHeadrooms) : 0;
+    suppDetoxMembers.forEach((m, i) => {
+      detoxCapMap[m.id] = suppHeadrooms[i] > 0 ? sharedCap : 0;
+    });
+  }
+
+  const detoxResult = levelDownCall(detoxCapMap, CALL_POOL - 57);
+  active.forEach(m => {
+    callDetox[m.id] = m.id === 'AJ' ? 57 : (detoxResult[m.id] || 0);
+  });
+
+  // ── AMCS call (assigned after Detox) ─────────────────────────────────
+  // RH excluded — all his call is Detox.
+  // Each member's AMCS cap = weCap − Detox call already assigned.
+  const amcsCapMap = {};
   amcsMembers.forEach(m => {
-    if ((amcsWks[m.id] || 0) > 0) amcsCallPool[m.id] = amcsWks[m.id];
+    if (m.id === 'RH' || !(amcsWks[m.id] || 0)) return;
+    const capActive = capMode !== 'none' && (capMode === 'all' || (capMode === 'senior' && m.senior));
+    if (!capActive) { amcsCapMap[m.id] = CALL_POOL; return; }
+    const alreadyDetox = m.id === 'AJ' ? 57 : (callDetox[m.id] || 0);
+    amcsCapMap[m.id] = Math.max(0, m.weCap - alreadyDetox);
   });
-  const amcsCapFn = capMode !== 'none' ? (id, days) => {
-    const m = amcsMembers.find(m => m.id === id);
-    const capActive = capMode === 'all' || (capMode === 'senior' && m.senior);
-    if (!capActive) return days;
-    // AJ's flat 52 Detox days count toward his combined cap.
-    // For all other detox members, Detox call will be accounted in dcap instead —
-    // AMCS cap here uses the full weCap; dcap subtracts alreadyAmcs.
-    const alreadyDetox = id === 'AJ' ? 52 : 0;
-    return Math.min(days, Math.max(0, m.weCap - alreadyDetox));
-  } : null;
-  const amcsCallResult = distributeCall(amcsCallPool, CALL_POOL, amcsCapFn);
-  amcsMembers.forEach(m => { callAmcs[m.id] = amcsCallResult[m.id] || 0; });
+  const amcsResult = levelDownCall(amcsCapMap, CALL_POOL);
+  amcsMembers.forEach(m => { callAmcs[m.id] = amcsResult[m.id] || 0; });
 
-  // Detox call: distribute 116 days proportionate to ALL detox weeks (including AJ),
-  // then override AJ with his flat 52. This prevents RH from being assigned an
-  // outsized share just because AJ is excluded from the pool denominator.
-  const detoxCallPool = {};
-  active.forEach(m => {
-    if ((detoxWks[m.id] || 0) > 0) detoxCallPool[m.id] = detoxWks[m.id];
-  });
-  const detoxCapFn = capMode !== 'none' ? (id, days) => {
-    if (id === 'AJ') return days; // AJ handled separately
-    const m = active.find(m => m.id === id);
-    const capActive = capMode === 'all' || (capMode === 'senior' && m.senior);
-    if (!capActive) return days;
-    const alreadyAmcs = callAmcs[id] || 0;
-    return Math.min(days, Math.max(0, m.weCap - alreadyAmcs));
-  } : null;
-  const detoxCallResult = distributeCall(detoxCallPool, CALL_POOL, detoxCapFn);
-  active.forEach(m => {
-    if (m.id === 'AJ') { callDetox[m.id] = 52; return; } // flat override
-    callDetox[m.id] = detoxCallResult[m.id] || 0;
-  });
-
-  // Peri call: proportionate across all peri members, never capped
-  const periCallPool = {};
-  periCallMembers.forEach(m => { periCallPool[m.id] = periWks[m.id] || 13; });
-  const periCallResult = distributeCall(periCallPool, CALL_POOL, null);
-  periCallMembers.forEach(m => { callPeri[m.id] = periCallResult[m.id] || 0; });
+  // ── Peri call ─────────────────────────────────────────────────────────
+  // Equal share among scheduled peri members, never capped.
+  const periCapMap = {};
+  periCallMembers.forEach(m => { periCapMap[m.id] = CALL_POOL; });
+  const periResult = levelDownCall(periCapMap, CALL_POOL);
+  periCallMembers.forEach(m => { callPeri[m.id] = periResult[m.id] || 0; });
 
   // ── Build result objects ──────────────────────────────────────────────
   const results = {};
@@ -1063,7 +1057,7 @@ function compute() {
   // AMCS call: sum actual assigned values (excl RH whose obligation is covered by Detox call)
   const amcsCallSupplied = Math.round(amcsMembers.reduce((s, m) => s + (callAmcs[m.id] || 0), 0));
 
-  // Detox call: include AJ's flat 52 in total. Demand = full CALL_POOL (116).
+  // Detox call: demand is 116. AJ contributes 57 flat; others share the remainder.
   const detoxNonAjTarget = CALL_POOL;
   const detoxCallSupplied = Math.round(active.reduce((s, m) => s + (callDetox[m.id] || 0), 0));
 
@@ -1153,7 +1147,7 @@ function renderGrid(calc) {
     // AJ has a flat 52 Detox call days. RH has 0 AMCS call (covered by Detox).
     if (r.ca > 0) callEntries.push({ label: 'AMCS call', days: r.ca, color: C.amcs });
     if (r.cd > 0) {
-      const detoxLabel = m.id === 'AJ' ? 'Detox call (flat 52)' : 'Detox call';
+      const detoxLabel = m.id === 'AJ' ? 'Detox call (flat 57)' : 'Detox call';
       callEntries.push({ label: detoxLabel, days: r.cd, color: m.detoxCore ? C.dcore : C.dsupp });
     }
     if (r.cp > 0) callEntries.push({ label: 'Perinatal call', days: r.cp, color: C.peri });
@@ -1272,7 +1266,7 @@ function renderSidebar(calc) {
     `Detox Core: AJ = 26 wks, RH = 13 wks (fixed).`,
     `Detox Support: remaining ${demands.detox - 39} wks shared equally among support members.`,
     'Detox and AMCS call caps are combined — Detox call days count toward the combined call cap.',
-    'AJ: flat 52 Detox call days. Also included in AMCS call pool proportionate to AMCS weeks worked.',
+    'AJ: flat 57 Detox call days (half weekends + adjacent STATs). Also in AMCS call pool proportionate to AMCS weeks worked.',
     'Detox and AMCS call are interchangeable — all call days count equally toward the combined service obligation.'
   ];
 
@@ -1307,7 +1301,7 @@ function renderSidebar(calc) {
     <div>
       <div class="sidebar-section-title">Service coverage</div>
       ${svcBlock('AMCS',      supply.amcs,  demands.amcs,  callSupply.amcs,  demands.call,      C.amcs,  '')}
-      ${svcBlock('Detox',     supply.detox, demands.detox, callSupply.detox, detoxNonAjTarget,  C.dcore, '(excl AJ)')}
+      ${svcBlock('Detox',     supply.detox, demands.detox, callSupply.detox, detoxNonAjTarget,  C.dcore, '')}
       ${svcBlock('Perinatal', supply.peri,  demands.peri,  callSupply.peri,  demands.call,      C.peri,  '')}
     </div>
     <div>
