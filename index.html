@@ -990,17 +990,22 @@ function compute() {
     detoxCapMap['RH'] = rhCapActive ? rhMember.weCap : CALL_POOL;
   }
 
-  // Detox Support: equal shared cap = min positive headroom among members
+  // Detox Support: capped members share equally at their minimum cap.
+  // Uncapped members (non-seniors in Senior Caps mode) absorb any remaining
+  // days so full detox coverage is always achieved when possible.
   const suppDetoxMembers = active.filter(m => m.detoxSupp);
   if (suppDetoxMembers.length > 0) {
-    const suppHeadrooms = suppDetoxMembers.map(m => {
+    const suppCaps = suppDetoxMembers.map(m => {
       const capActive = capMode !== 'none' && (capMode === 'all' || (capMode === 'senior' && m.senior));
-      return capActive ? m.weCap : CALL_POOL; // full cap available — Detox is first
+      return capActive ? m.weCap : CALL_POOL; // uncapped = absorbs surplus
     });
-    const positiveHeadrooms = suppHeadrooms.filter(h => h > 0);
-    const sharedCap = positiveHeadrooms.length > 0 ? Math.min(...positiveHeadrooms) : 0;
+    // Shared cap = minimum among capped members only, so they get equal treatment
+    const cappedVals = suppCaps.filter(c => c < CALL_POOL);
+    const sharedCap = cappedVals.length > 0 ? Math.min(...cappedVals) : CALL_POOL;
     suppDetoxMembers.forEach((m, i) => {
-      detoxCapMap[m.id] = suppHeadrooms[i] > 0 ? sharedCap : 0;
+      // Capped members get the shared cap; uncapped members keep their full cap
+      // so they can absorb any surplus beyond what capped members can cover.
+      detoxCapMap[m.id] = suppCaps[i] < CALL_POOL ? sharedCap : CALL_POOL;
     });
   }
 
