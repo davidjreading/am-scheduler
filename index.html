@@ -659,12 +659,7 @@ body.mobile #filter-bar .seg-btn { font-size: 12px; padding: 5px 10px; flex: 1; 
     <div class="topbar-title"><span>AM</span> Schedule Modeller</div>
     <div class="topbar-controls">
 
-      <div class="setting-group">
-        <span class="setting-label">Cap mode</span>
-        <button class="seg-btn" id="cap-senior" onclick="setCapMode('senior')">Senior caps</button>
-        <button class="seg-btn" id="cap-all"    onclick="setCapMode('all')">All caps</button>
-        <button class="seg-btn" id="cap-none"   onclick="setCapMode('none')">No caps</button>
-      </div>
+
 
       <div class="setting-group">
         <span class="setting-label">RJH 2nd doc</span>
@@ -720,47 +715,47 @@ let members = [
   { id:'RH',  label:'RH',  real:true,  onLeave:false, senior:true,
     amcs:true,  detoxCore:true,  detoxSupp:false, peri:false,
     site:'both',   noRJHFirst:false,
-    wkCap:18, weCap:10, notes:'Never Saturdays · Detox call covers call obligation' },
+    wkCap:18, weCap:10, notes:'Never Saturdays · Detox call covers call obligation · Desired: 14 wks · 0 call days · never Sundays' },
   { id:'KW',  label:'KW',  real:true,  onLeave:false, senior:true,
     amcs:true,  detoxCore:false, detoxSupp:false, peri:false,
     site:'rjh',    noRJHFirst:false,
-    wkCap:10, weCap:6,  notes:'RJH only' },
+    wkCap:10, weCap:6,  notes:'RJH only · Desired: 6–8 wks · 0 call days' },
   { id:'DM',  label:'DM',  real:true,  onLeave:false, senior:true,
     amcs:true,  detoxCore:false, detoxSupp:false, peri:false,
     site:'vgh',    noRJHFirst:true,
-    wkCap:9,  weCap:12, notes:'VGH only · retiring' },
+    wkCap:9,  weCap:12, notes:'VGH only · retiring · Desired: 9 wks · 9 call days' },
   { id:'TJ',  label:'TJ',  real:true,  onLeave:false, senior:true,
     amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
     site:'rjh',    noRJHFirst:false,
-    wkCap:20, weCap:20, notes:'RJH only' },
+    wkCap:20, weCap:20, notes:'RJH only · Desired: 18 wks · 16 call days' },
   { id:'AJ',  label:'AJ',  real:true,  onLeave:false, senior:true,
     amcs:true,  detoxCore:true,  detoxSupp:false, peri:false,
     site:'vgh',    noRJHFirst:true,
-    wkCap:40, weCap:57, notes:'VGH only · ~57 Detox call days (half weekends + adjacent STATs)' },
+    wkCap:6,  weCap:12, notes:'VGH only · Detox Core (6 wks fixed) · Desired: 6 wks · 12 call days' },
   { id:'DR',  label:'DR',  real:true,  onLeave:false, senior:false,
     amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
     site:'both',   noRJHFirst:false,
-    wkCap:24, weCap:24, notes:'' },
+    wkCap:19, weCap:24, notes:'Desired: 13 wks · 0 call days' },
   { id:'KR',  label:'KR',  real:true,  onLeave:false, senior:true,
     amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
     site:'both',   noRJHFirst:false,
-    wkCap:11, weCap:12, notes:'AMCS + Detox Support' },
+    wkCap:10, weCap:12, notes:'AMCS + Detox Support · Desired: 10 wks · 10 call days' },
   { id:'MTB', label:'MTB', real:true,  onLeave:false, senior:false,
     amcs:true,  detoxCore:false, detoxSupp:true,  peri:true,
     site:'both',   noRJHFirst:false,
-    wkCap:29, weCap:12, notes:'Triple service · 12d AMCS/Detox call cap' },
+    wkCap:23, weCap:12, notes:'Triple service · 12d AMCS/Detox call cap · Desired: 23 wks total (incl peri) · 0 call days' },
   { id:'AR',  label:'AR',  real:true,  onLeave:false, senior:true,
     amcs:true,  detoxCore:false, detoxSupp:true,  peri:true,
     site:'both',   noRJHFirst:false,
-    wkCap:24, weCap:6,  notes:'Triple service · 6d AMCS/Detox call cap' },
+    wkCap:24, weCap:6,  notes:'Triple service · 6d AMCS/Detox call cap · Desired: 8 wks AMCS (excl peri) · 0 call days' },
   { id:'CH',  label:'CH',  real:true,  onLeave:false, senior:false,
     amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
     site:'both',   noRJHFirst:false,
-    wkCap:13, weCap:26, notes:'' },
+    wkCap:13, weCap:26, notes:'Desired: 12 wks · as few call days as possible' },
   { id:'NS',  label:'NS',  real:true,  onLeave:false, senior:true,
     amcs:true,  detoxCore:false, detoxSupp:false, peri:false,
     site:'rjh',    noRJHFirst:false,
-    wkCap:2,  weCap:10, notes:'RJH only' },
+    wkCap:2,  weCap:8,  notes:'RJH only' },
   { id:'AP',  label:'AP',  real:true,  onLeave:false, senior:true,
     amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
     site:'both',   noRJHFirst:false,
@@ -768,7 +763,7 @@ let members = [
   { id:'AW',  label:'AW',  real:true,  onLeave:false, senior:false,
     amcs:false, detoxCore:false, detoxSupp:false, peri:true,
     site:'hwh',    noRJHFirst:false,
-    wkCap:13, weCap:0,  notes:'HerWayHome · Perinatal call included' },
+    wkCap:13, weCap:0,  notes:'HerWayHome · Perinatal call included · As required for Perinatal' },
   { id:'GW',  label:'GW',  real:true,  onLeave:false, senior:false,
     amcs:false, detoxCore:false, detoxSupp:false, peri:true,
     site:'hwh',    noRJHFirst:false,
@@ -776,7 +771,7 @@ let members = [
   { id:'KM',  label:'KM',  real:true,  onLeave:false, senior:false,
     amcs:false, detoxCore:false, detoxSupp:false, peri:true,
     site:'hwh',    noRJHFirst:false,
-    wkCap:13, weCap:0,  notes:'HerWayHome · Perinatal only' },
+    wkCap:13, weCap:0,  notes:'HerWayHome · Perinatal only · As required for Perinatal' },
   { id:'SL',  label:'SL',  real:true,  onLeave:true,  senior:false,
     amcs:true,  detoxCore:false, detoxSupp:false, peri:true,
     site:'both',   noRJHFirst:false,
@@ -837,106 +832,119 @@ function compute() {
   const coreMembers  = active.filter(m => m.detoxCore);
   const suppMembers  = active.filter(m => m.detoxSupp);
 
-  // Fixed core allocations: AJ=26, RH=13 (or proportionate if other core members added)
-  const detoxWks = {};
-  const coreFixed = { 'AJ': 26, 'RH': 13 };
-  let coreTotal = 0;
-  coreMembers.forEach(m => {
-    const w = coreFixed[m.id] || Math.round(DETOX_DEMAND / coreMembers.length);
-    detoxWks[m.id] = w;
-    coreTotal += w;
-  });
-
-  // Support members share the remaining deficit
-  const suppDeficit = Math.max(0, DETOX_DEMAND - coreTotal);
-  if (suppMembers.length > 0 && suppDeficit > 0) {
-    const base = Math.floor(suppDeficit / suppMembers.length);
-    const rem  = suppDeficit % suppMembers.length;
-    suppMembers.forEach((m, i) => {
-      detoxWks[m.id] = (detoxWks[m.id] || 0) + base + (i < rem ? 1 : 0);
-    });
-  }
-
-  // ── AMCS weeks ───────────────────────────────────────────────────────
+  // ── AMCS weeks (assigned first) ──────────────────────────────────────
+  // RH is Detox Core only — excluded from AMCS week pool.
+  // All other AMCS members share the 104-week demand up to their wkCap.
+  // Peri members' 13 peri weeks count toward their cap (credit).
+  // AMCS is fully staffed first; Detox gets whatever capacity remains after.
   const amcsMembers = active.filter(m => m.amcs);
   const amcsWks = {};
 
   if (amcsMembers.length > 0) {
-    // Each member's credit from Detox + Peri
+    // Credit = peri weeks only (Detox assigned after)
     const credit = {};
     amcsMembers.forEach(m => {
-      credit[m.id] = (detoxWks[m.id] || 0) + (periWks[m.id] || 0);
+      // Peri weeks + fixed Detox Core weeks count against the AMCS cap
+      const detoxCore = m.detoxCore ? (m.id === 'AJ' ? 6 : m.id === 'RH' ? 13 : 0) : 0;
+      credit[m.id] = (periWks[m.id] || 0) + detoxCore;
     });
 
-    // Base obligation = total demand / number of eligible members
-    const baseObligation = AMCS_DEMAND / amcsMembers.length;
+    // maxAmcs = wkCap − peri weeks only (no Detox reservation)
+    const maxAmcsFn = m => Math.max(0, m.wkCap - (credit[m.id] || 0));
 
-    // Reduced obligation after credit
+    // RH excluded from AMCS weeks entirely
+    const amcsEligible = amcsMembers.filter(m => m.id !== 'RH');
+
+    // Base obligation = AMCS demand / eligible members
+    const baseObligation = AMCS_DEMAND / amcsEligible.length;
     const obligation = {};
-    amcsMembers.forEach(m => {
+    amcsEligible.forEach(m => {
       obligation[m.id] = Math.max(0, baseObligation - credit[m.id]);
     });
 
-    // Assign whole weeks using largest-remainder method:
-    // floor each obligation, then give +1 to those with the biggest fractional parts
-    // until demand is exactly met. Guarantees sum == AMCS_DEMAND.
+    // Largest-remainder whole-week assignment
     const oblFrac = {};
-    amcsMembers.forEach(m => { oblFrac[m.id] = obligation[m.id] - Math.floor(obligation[m.id]); });
+    amcsEligible.forEach(m => { oblFrac[m.id] = obligation[m.id] - Math.floor(obligation[m.id]); });
     let totalAssigned = 0;
-    amcsMembers.forEach(m => {
+    amcsEligible.forEach(m => {
       amcsWks[m.id] = Math.floor(obligation[m.id]);
       totalAssigned += amcsWks[m.id];
     });
     let remaining = AMCS_DEMAND - totalAssigned;
-    // Sort by fractional remainder descending — give +1 to the most "deserving"
-    const sortedByFrac = [...amcsMembers].sort((a, b) => oblFrac[b.id] - oblFrac[a.id]);
+    const sortedByFrac = [...amcsEligible].sort((a, b) => oblFrac[b.id] - oblFrac[a.id]);
     for (let i = 0; remaining > 0; i++, remaining--) {
       amcsWks[sortedByFrac[i % sortedByFrac.length].id]++;
     }
 
-    // Step 3: Apply caps if active
-    if (capMode !== 'none') {
+    // Apply caps: max AMCS weeks = wkCap − peri weeks
+    {
       let capped = false;
-      amcsMembers.forEach(m => {
-        const capActive = capMode === 'all' || (capMode === 'senior' && m.senior);
-        if (capActive) {
-          const maxAmcs = Math.max(0, m.wkCap - credit[m.id]);
-          if (amcsWks[m.id] > maxAmcs) {
-            amcsWks[m.id] = maxAmcs;
-            capped = true;
-          }
-        }
+      amcsEligible.forEach(m => {
+        const max = maxAmcsFn(m);
+        if (amcsWks[m.id] > max) { amcsWks[m.id] = max; capped = true; }
       });
 
-      // If caps caused under-coverage, redistribute to uncapped members.
-      // Rebuild the eligible list on every iteration to avoid overshooting caps.
       if (capped) {
-        const actualTotal = amcsMembers.reduce((s, m) => s + (amcsWks[m.id] || 0), 0);
+        const actualTotal = amcsEligible.reduce((s, m) => s + (amcsWks[m.id] || 0), 0);
         let stillNeeded = AMCS_DEMAND - actualTotal;
-        let ui = 0;
-        let safety = stillNeeded * amcsMembers.length + 1;
+        let ui = 0, safety = stillNeeded * amcsEligible.length + 1;
         while (stillNeeded > 0 && safety-- > 0) {
-          const uncapped = amcsMembers.filter(m => {
-            const capActive = capMode === 'all' || (capMode === 'senior' && m.senior);
-            const maxAmcs = Math.max(0, m.wkCap - credit[m.id]);
-            // Uncapped members have no limit; capped members can still absorb if below max
-            return !capActive || (amcsWks[m.id] || 0) < maxAmcs;
-          });
+          const uncapped = amcsEligible.filter(m => (amcsWks[m.id] || 0) < maxAmcsFn(m));
           if (uncapped.length === 0) break;
-          uncapped.sort((a,b) => (amcsWks[a.id]||0) - (amcsWks[b.id]||0));
+          uncapped.sort((a, b) => (amcsWks[a.id] || 0) - (amcsWks[b.id] || 0));
           amcsWks[uncapped[ui % uncapped.length].id]++;
-          stillNeeded--;
-          ui++;
+          stillNeeded--; ui++;
         }
       }
 
-      // Hard clamp: ensure no capped member ever exceeds their cap (guards against rounding)
-      amcsMembers.forEach(m => {
-        const capActive = capMode === 'all' || (capMode === 'senior' && m.senior);
-        if (capActive) {
-          const maxAmcs = Math.max(0, m.wkCap - credit[m.id]);
-          if ((amcsWks[m.id] || 0) > maxAmcs) amcsWks[m.id] = maxAmcs;
+      // Hard clamp
+      amcsEligible.forEach(m => {
+        const max = maxAmcsFn(m);
+        if ((amcsWks[m.id] || 0) > max) amcsWks[m.id] = max;
+      });
+    }
+  }
+
+  // ── DETOX weeks (assigned after AMCS) ────────────────────────────────
+  // RH = fixed 13 weeks (Detox Core, no AMCS).
+  // Support members contribute from whatever wkCap remains after AMCS weeks.
+  const detoxWks = {};
+
+  // RH: fixed core allocation
+  coreMembers.forEach(m => {
+    const w = m.id === 'AJ' ? 6 : m.id === 'RH' ? 13 : Math.round(DETOX_DEMAND / coreMembers.length);
+    detoxWks[m.id] = w;
+  });
+  const coreTotal = Object.values(detoxWks).reduce((s, v) => s + v, 0);
+
+  // Support members share the remaining deficit equally (level-down: start at
+  // equal share, reduce those with most until total is exact).
+  const suppDeficit = Math.max(0, DETOX_DEMAND - coreTotal);
+  if (suppMembers.length > 0 && suppDeficit > 0) {
+    // Each support member's remaining capacity after AMCS + peri
+    const suppCapMap = {};
+    suppMembers.forEach(m => {
+      const used = (amcsWks[m.id] || 0) + (periWks[m.id] || 0);
+      suppCapMap[m.id] = Math.max(0, m.wkCap - used);
+    });
+    const eligible = suppMembers.filter(m => suppCapMap[m.id] > 0);
+    if (eligible.length > 0) {
+      // Start everyone at the equal share (capped by their remaining capacity)
+      const equalShare = Math.ceil(suppDeficit / eligible.length);
+      const give = {};
+      eligible.forEach(m => { give[m.id] = Math.min(suppCapMap[m.id], equalShare); });
+      // Level down: reduce the highest until total == suppDeficit
+      let total = Object.values(give).reduce((s, v) => s + v, 0);
+      while (total > suppDeficit) {
+        const maxVal = Math.max(...Object.values(give));
+        for (const m of eligible) {
+          if (give[m.id] === maxVal && total > suppDeficit) {
+            give[m.id]--; total--;
+          }
         }
+      }
+      eligible.forEach(m => {
+        detoxWks[m.id] = (detoxWks[m.id] || 0) + give[m.id];
       });
     }
   }
@@ -978,9 +986,9 @@ function compute() {
   const callAmcs = {}, callDetox = {}, callPeri = {};
 
   // ── DETOX call (assigned first) ───────────────────────────────────────
-  // AJ = flat 57. RH = his full weCap from Detox (no AMCS call).
-  // Detox Support members share the remaining 59 days equally.
-  // Assigned before AMCS so support members' detox days are fixed first;
+  // RH = his full weCap from Detox (no AMCS call).
+  // Detox Support members (including AJ) share the remaining days equally.
+  // Assigned before AMCS so detox days are fixed first;
   // AMCS then uses whatever combined-cap headroom remains.
   const detoxCapMap = {};
 
@@ -998,21 +1006,18 @@ function compute() {
   if (suppDetoxMembers.length > 0) {
     const suppCaps = suppDetoxMembers.map(m => {
       const capActive = capMode !== 'none' && (capMode === 'all' || (capMode === 'senior' && m.senior));
-      return capActive ? m.weCap : CALL_POOL; // uncapped = absorbs surplus
+      return capActive ? m.weCap : CALL_POOL;
     });
-    // Shared cap = minimum among capped members only, so they get equal treatment
     const cappedVals = suppCaps.filter(c => c < CALL_POOL);
     const sharedCap = cappedVals.length > 0 ? Math.min(...cappedVals) : CALL_POOL;
     suppDetoxMembers.forEach((m, i) => {
-      // Capped members get the shared cap; uncapped members keep their full cap
-      // so they can absorb any surplus beyond what capped members can cover.
       detoxCapMap[m.id] = suppCaps[i] < CALL_POOL ? sharedCap : CALL_POOL;
     });
   }
 
-  const detoxResult = levelDownCall(detoxCapMap, CALL_POOL - 57);
+  const detoxResult = levelDownCall(detoxCapMap, CALL_POOL);
   active.forEach(m => {
-    callDetox[m.id] = m.id === 'AJ' ? 57 : (detoxResult[m.id] || 0);
+    callDetox[m.id] = detoxResult[m.id] || 0;
   });
 
   // ── AMCS call (assigned after Detox) ─────────────────────────────────
@@ -1023,8 +1028,7 @@ function compute() {
     if (m.id === 'RH' || !(amcsWks[m.id] || 0)) return;
     const capActive = capMode !== 'none' && (capMode === 'all' || (capMode === 'senior' && m.senior));
     if (!capActive) { amcsCapMap[m.id] = CALL_POOL; return; }
-    const alreadyDetox = m.id === 'AJ' ? 57 : (callDetox[m.id] || 0);
-    amcsCapMap[m.id] = Math.max(0, m.weCap - alreadyDetox);
+    amcsCapMap[m.id] = Math.max(0, m.weCap - (callDetox[m.id] || 0));
   });
   const amcsResult = levelDownCall(amcsCapMap, CALL_POOL);
   amcsMembers.forEach(m => { callAmcs[m.id] = amcsResult[m.id] || 0; });
@@ -1063,7 +1067,7 @@ function compute() {
   // AMCS call: sum actual assigned values (excl RH whose obligation is covered by Detox call)
   const amcsCallSupplied = Math.round(amcsMembers.reduce((s, m) => s + (callAmcs[m.id] || 0), 0));
 
-  // Detox call: demand is 116. AJ contributes 57 flat; others share the remainder.
+  // Detox call: demand is 116. All Detox members (RH + Support) share equally.
   const detoxNonAjTarget = CALL_POOL;
   const detoxCallSupplied = Math.round(active.reduce((s, m) => s + (callDetox[m.id] || 0), 0));
 
@@ -1153,7 +1157,7 @@ function renderGrid(calc) {
     // AJ has a flat 52 Detox call days. RH has 0 AMCS call (covered by Detox).
     if (r.ca > 0) callEntries.push({ label: 'AMCS call', days: r.ca, color: C.amcs });
     if (r.cd > 0) {
-      const detoxLabel = m.id === 'AJ' ? 'Detox call (flat 57)' : 'Detox call';
+      const detoxLabel = 'Detox call';
       callEntries.push({ label: detoxLabel, days: r.cd, color: m.detoxCore ? C.dcore : C.dsupp });
     }
     if (r.cp > 0) callEntries.push({ label: 'Perinatal call', days: r.cp, color: C.peri });
@@ -1262,17 +1266,13 @@ function renderSidebar(calc) {
   }
 
   // Build rules text based on current settings
-  const capRules = capMode === 'none'
-    ? ['No individual caps are applied.', 'All AMCS weeks and weekends/STATs are divided equally among eligible members to meet demand exactly.']
-    : capMode === 'senior'
-    ? ['Senior member week and weekend/STAT caps are respected.', 'Any weeks or call days that senior caps cannot cover are redistributed to non-senior members.', 'Non-senior members have no caps enforced.']
-    : ['All member week and weekend/STAT caps are respected.', 'Surplus from capped members is redistributed to those with remaining capacity.', 'Weeks and call days are always fully covered if pool capacity allows.'];
+
 
   const detoxRules = [
-    `Detox Core: AJ = 26 wks, RH = 13 wks (fixed).`,
+    `Detox Core: RH = 13 wks, AJ = 6 wks (both fixed).`,
     `Detox Support: remaining ${demands.detox - 39} wks shared equally among support members.`,
     'Detox and AMCS call caps are combined — Detox call days count toward the combined call cap.',
-    'AJ: flat 57 Detox call days (half weekends + adjacent STATs). Also in AMCS call pool proportionate to AMCS weeks worked.',
+    'AJ: Detox Support member. Shares AMCS and Detox call obligations with other support members.',
     'Detox and AMCS call are interchangeable — all call days count equally toward the combined service obligation.'
   ];
 
@@ -1316,10 +1316,7 @@ function renderSidebar(calc) {
         <label>AMCS demand</label>
         <div class="stat-val" style="color:${C.amcs}">${demands.amcs} wks</div>
       </div>
-      <div class="stat-block">
-        <label>Cap mode</label>
-        <div class="stat-val" style="color:${C.senior}">${capMode === 'senior' ? 'Senior caps' : capMode === 'all' ? 'All caps' : 'No caps'}</div>
-      </div>
+
       <div class="stat-block">
         <label>RJH 2nd doc</label>
         <div class="stat-val" style="color:${secondDoc ? C.amcs : C.dim}">${secondDoc ? 'On' : 'Off'}</div>
@@ -1331,7 +1328,7 @@ function renderSidebar(calc) {
     </div>
     <div>
       <div class="sidebar-section-title">Scheduling rules</div>
-      ${ruleSection('Cap mode', C.senior, capRules)}
+
       ${ruleSection('AMCS', C.amcs, amcsRules)}
       ${ruleSection('Detox', C.dcore, detoxRules)}
       ${ruleSection('Perinatal', C.peri, periRules)}
@@ -1347,17 +1344,14 @@ function render() {
   const calc = compute();
   renderGrid(calc);
   renderSidebar(calc);
-  // Update topbar buttons
-  ['senior','all','none'].forEach(mode => {
-    document.getElementById('cap-' + mode).classList.toggle('active', capMode === mode);
-  });
+  // Cap mode is fixed to 'all'
   const sdBtn = document.getElementById('seconddoc-btn');
   sdBtn.classList.toggle('on', secondDoc);
   document.getElementById('seconddoc-lbl').textContent = secondDoc ? 'ON' : 'OFF';
 }
 
 // ── Global setting handlers ───────────────────────────────────────────────
-function setCapMode(mode) { capMode = mode; render(); }
+
 function toggleSecondDoc() {
   secondDoc = !secondDoc;
   // Auto-update noRJHFirst for DM and AJ when second doc is off
