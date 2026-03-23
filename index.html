@@ -842,24 +842,25 @@ function compute() {
 
   const callAmcs = {}, callDetox = {}, callPeri = {};
 
-  // Total call pool across all AMCS members
-  const totalCallPool = amcsMembers.reduce((s, m) => s + m.weCap, 0);
-  // Fill AMCS call (116 days) equally up to each member's weCap
-  const amcsCallAssigned = fillEqually(CALL_POOL, amcsMembers.map(m => ({ id: m.id, cap: m.weCap })));
+  // Detox Core members (RH, AJ) do Detox call only — excluded from AMCS call pool.
+  // Fill AMCS call (116 days) equally among non-core AMCS members up to their weCap.
+  const amcsCallEligible = amcsMembers.filter(m => !m.detoxCore);
+  const amcsCallAssigned = fillEqually(CALL_POOL, amcsCallEligible.map(m => ({ id: m.id, cap: m.weCap })));
   amcsMembers.forEach(m => { callAmcs[m.id] = amcsCallAssigned[m.id] || 0; });
 
-  // Leftover call capacity after AMCS, split equally among Support members as Detox call
-  if (suppMembers.length > 0) {
-    const totalCallLeftover = suppMembers.reduce((s, m) =>
-      s + Math.max(0, m.weCap - (callAmcs[m.id] || 0)), 0);
+  // Detox call: all Detox members (core + support), capped at their individual headroom.
+  // Core members have full weCap available; support members have weCap minus AMCS call.
+  const detoxCallMembers = active.filter(m => m.detoxCore || m.detoxSupp);
+  if (detoxCallMembers.length > 0) {
+    const headroom = {};
+    detoxCallMembers.forEach(m => {
+      headroom[m.id] = Math.max(0, m.weCap - (callAmcs[m.id] || 0));
+    });
+    const totalCallLeftover = detoxCallMembers.reduce((s, m) => s + headroom[m.id], 0);
     const detoxCallToFill = Math.min(totalCallLeftover, CALL_POOL);
-    const baseCallShare   = Math.floor(detoxCallToFill / suppMembers.length);
-    const callRemainder   = detoxCallToFill - baseCallShare * suppMembers.length;
-
-    // Give remainder days to members with most call headroom
-    const suppByCallCap = [...suppMembers].sort((a, b) => b.weCap - a.weCap);
-    suppMembers.forEach(m => { callDetox[m.id] = baseCallShare; });
-    for (let i = 0; i < callRemainder; i++) callDetox[suppByCallCap[i].id]++;
+    const detoxCallAssigned = fillEqually(detoxCallToFill,
+      detoxCallMembers.map(m => ({ id: m.id, cap: headroom[m.id] })));
+    detoxCallMembers.forEach(m => { callDetox[m.id] = detoxCallAssigned[m.id] || 0; });
   }
 
   // Peri call: equal split among scheduled peri members, uncapped
