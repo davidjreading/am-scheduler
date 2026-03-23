@@ -20,7 +20,6 @@
   --dcore:     #ef4444;
   --dsupp:     #f97316;
   --peri:      #a78bfa;
-  --senior:    #f59e0b;
   --new:       #34d399;
   --gold:      #fbbf24;
   --warn:      #f59e0b;
@@ -322,33 +321,37 @@ body {
   letter-spacing: .04em;
 }
 
-.bar-wrap {
-  height: 16px;
-  border-radius: 4px;
-  overflow: hidden;
+/* ── Week boxes & call dots ── */
+.week-grid {
   display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+.week-box {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+.week-box.free {
   background: #0a1628;
+  border: 1px solid #1a3554;
 }
-.bar-seg {
+
+.call-dot-grid {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 9px;
-  font-family: monospace;
-  color: #fff;
-  font-weight: 600;
-  transition: width .3s;
+  flex-wrap: wrap;
+  gap: 2px;
 }
-.bar-free {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  padding-left: 5px;
+.call-dot-pip {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
 }
-.bar-free span {
-  font-size: 9px;
-  color: var(--muted);
-  font-style: italic;
+.call-dot-pip.free {
+  background: #0a1628;
+  border: 1px solid #1a3554;
 }
 
 .seg-legend { display: flex; gap: 8px; flex-wrap: wrap; }
@@ -364,38 +367,6 @@ body {
   letter-spacing: .1em;
   margin-bottom: 4px;
 }
-.call-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-  margin-bottom: 3px;
-}
-.call-row-left { display: flex; align-items: center; gap: 5px; flex: 1; min-width: 0; }
-.call-dot { width: 5px; height: 5px; border-radius: 2px; flex-shrink: 0; }
-.call-lbl { font-size: 10px; color: var(--dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.call-days {
-  font-family: monospace;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--gold);
-  flex-shrink: 0;
-}
-.call-days.capped { color: var(--warn); }
-.call-total-row {
-  display: flex;
-  justify-content: space-between;
-  padding-top: 5px;
-  border-top: 1px solid var(--border);
-  margin-top: 3px;
-}
-.call-total-lbl { font-size: 9px; color: var(--muted); }
-.call-total-val {
-  font-family: monospace;
-  font-size: 12px;
-  font-weight: 600;
-}
-
 .no-call { font-size: 10px; color: var(--muted); font-style: italic; }
 
 .card-notes {
@@ -602,53 +573,7 @@ body {
 
 hr.panel-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
 
-/* ── Mobile mode ── */
-.mobile-btn {
-  background: transparent;
-  border: 1px solid var(--border2);
-  color: var(--dim);
-  font-size: 15px;
-  width: 32px; height: 32px;
-  border-radius: 5px;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .15s;
-  flex-shrink: 0;
-}
-.mobile-btn.on {
-  background: rgba(167,139,250,.15);
-  border-color: var(--peri);
-  color: var(--peri);
-}
 
-body.mobile .sidebar { display: none; }
-body.mobile .topbar { height: auto; min-height: 52px; flex-wrap: wrap; padding: 8px 12px; gap: 8px; }
-body.mobile .topbar-controls { gap: 8px; }
-body.mobile .setting-group { padding: 5px 8px; }
-body.mobile .seg-btn { font-size: 12px; padding: 5px 10px; }
-body.mobile .toggle-btn { font-size: 12px; padding: 5px 10px; }
-body.mobile .add-btn { font-size: 12px; padding: 5px 10px; }
-body.mobile .grid { grid-template-columns: 1fr; gap: 8px; padding: 0; }
-body.mobile .main { padding: 10px; }
-body.mobile .card-id { font-size: 22px; }
-body.mobile .card-wks-num { font-size: 24px; }
-body.mobile .card-body { padding: 14px; gap: 10px; }
-body.mobile .bar-wrap { height: 20px; }
-body.mobile .bar-seg { font-size: 11px; }
-body.mobile .call-lbl { font-size: 12px; }
-body.mobile .call-days { font-size: 13px; }
-body.mobile .seg-leg-item { font-size: 11px; }
-body.mobile .card-sites { font-size: 12px; }
-body.mobile .card-notes { font-size: 11px; }
-body.mobile .no-call { font-size: 12px; }
-body.mobile .call-section-title { font-size: 11px; }
-body.mobile .card-wks-lbl { font-size: 10px; }
-body.mobile .panel { width: 100vw; }
-body.mobile .leave-id { font-size: 20px; }
-body.mobile .leave-lbl { font-size: 12px; }
-/* Filter bar mobile */
-body.mobile #filter-bar { padding: 6px 12px; gap: 6px; }
-body.mobile #filter-bar .seg-btn { font-size: 12px; padding: 5px 10px; flex: 1; text-align: center; }
 </style>
 </head>
 <body>
@@ -670,7 +595,6 @@ body.mobile #filter-bar .seg-btn { font-size: 12px; padding: 5px 10px; flex: 1; 
 
     </div>
     <button class="add-btn" onclick="addPlaceholder()">+ Add member</button>
-    <button class="mobile-btn" id="mobile-btn" onclick="toggleMobile()" title="Mobile view">📱</button>
   </div>
 
   <div id="filter-bar" style="background:var(--surface);border-bottom:1px solid var(--border);padding:6px 20px;display:flex;align-items:center;gap:6px;flex-shrink:0">
@@ -706,7 +630,7 @@ body.mobile #filter-bar .seg-btn { font-size: 12px; padding: 5px 10px; flex: 1; 
 // ── Palette ──────────────────────────────────────────────────────────────
 const C = {
   amcs:'#3b82f6', dcore:'#ef4444', dsupp:'#f97316',
-  peri:'#a78bfa', senior:'#f59e0b', newm:'#34d399',
+  peri:'#a78bfa', newm:'#34d399',
   faint:'#1a3554', dim:'#5a82a6', gold:'#fbbf24',
 };
 
@@ -787,28 +711,18 @@ let members = [
 ];
 
 // ── Global state ─────────────────────────────────────────────────────────
-let capMode    = 'all';   // 'senior' | 'all' | 'none'
 let secondDoc  = false;
 let placeholderCount = 0;
 let editingId  = null;
 let activeFilter = 'all';
-let mobileMode = true;
-
-function toggleMobile() {
-  mobileMode = !mobileMode;
-  document.body.classList.toggle('mobile', mobileMode);
-  const btn = document.getElementById('mobile-btn');
-  if (btn) btn.classList.toggle('on', mobileMode);
-} // 'all' | 'amcs' | 'detox' | 'perinatal'
-
+// 'all' | 'amcs' | 'detox' | 'perinatal'
 function setFilter(f) {
   activeFilter = f;
   ['all','amcs','detox','perinatal'].forEach(k => {
     const btn = document.getElementById('flt-' + k);
     if (btn) btn.classList.toggle('active', k === f);
   });
-  document.body.classList.add('mobile');
-render();
+  render();
 }
 
 // ── Core calculation engine ───────────────────────────────────────────────
@@ -821,224 +735,144 @@ function compute() {
   const active = members.filter(m => !m.onLeave);
 
   // ── Perinatal weeks ─────────────────────────────────────────────────
-  const periMembers = active.filter(m => m.peri);
-  // Only schedule weeks/call for peri members with wkCap > 0
-  // (members with wkCap=0 are in the group but not taking weeks or call)
-  const periScheduled = periMembers.filter(m => m.wkCap > 0);
+  // Fixed 13 wks each for peri members with wkCap > 0.
+  const periScheduled = active.filter(m => m.peri && m.wkCap > 0);
   const periWks = {};
   periScheduled.forEach(m => { periWks[m.id] = 13; });
 
-  // ── Detox weeks ──────────────────────────────────────────────────────
-  const coreMembers  = active.filter(m => m.detoxCore);
-  const suppMembers  = active.filter(m => m.detoxSupp);
-
-  // ── AMCS weeks (assigned first) ──────────────────────────────────────
-  // RH is Detox Core only — excluded from AMCS week pool.
-  // All other AMCS members share the 104-week demand up to their wkCap.
-  // Peri members' 13 peri weeks count toward their cap (credit).
-  // AMCS is fully staffed first; Detox gets whatever capacity remains after.
-  const amcsMembers = active.filter(m => m.amcs);
-  const amcsWks = {};
-
-  if (amcsMembers.length > 0) {
-    // Credit = peri weeks only (Detox assigned after)
-    const credit = {};
-    amcsMembers.forEach(m => {
-      // Peri weeks + fixed Detox Core weeks count against the AMCS cap
-      const detoxCore = m.detoxCore ? (m.id === 'AJ' ? 6 : m.id === 'RH' ? 13 : 0) : 0;
-      credit[m.id] = (periWks[m.id] || 0) + detoxCore;
-    });
-
-    // maxAmcs = wkCap − peri weeks only (no Detox reservation)
-    const maxAmcsFn = m => Math.max(0, m.wkCap - (credit[m.id] || 0));
-
-    // RH excluded from AMCS weeks entirely
-    const amcsEligible = amcsMembers.filter(m => m.id !== 'RH');
-
-    // Base obligation = AMCS demand / eligible members
-    const baseObligation = AMCS_DEMAND / amcsEligible.length;
-    const obligation = {};
-    amcsEligible.forEach(m => {
-      obligation[m.id] = Math.max(0, baseObligation - credit[m.id]);
-    });
-
-    // Largest-remainder whole-week assignment
-    const oblFrac = {};
-    amcsEligible.forEach(m => { oblFrac[m.id] = obligation[m.id] - Math.floor(obligation[m.id]); });
-    let totalAssigned = 0;
-    amcsEligible.forEach(m => {
-      amcsWks[m.id] = Math.floor(obligation[m.id]);
-      totalAssigned += amcsWks[m.id];
-    });
-    let remaining = AMCS_DEMAND - totalAssigned;
-    const sortedByFrac = [...amcsEligible].sort((a, b) => oblFrac[b.id] - oblFrac[a.id]);
-    for (let i = 0; remaining > 0; i++, remaining--) {
-      amcsWks[sortedByFrac[i % sortedByFrac.length].id]++;
-    }
-
-    // Apply caps: max AMCS weeks = wkCap − peri weeks
-    {
-      let capped = false;
-      amcsEligible.forEach(m => {
-        const max = maxAmcsFn(m);
-        if (amcsWks[m.id] > max) { amcsWks[m.id] = max; capped = true; }
-      });
-
-      if (capped) {
-        const actualTotal = amcsEligible.reduce((s, m) => s + (amcsWks[m.id] || 0), 0);
-        let stillNeeded = AMCS_DEMAND - actualTotal;
-        let ui = 0, safety = stillNeeded * amcsEligible.length + 1;
-        while (stillNeeded > 0 && safety-- > 0) {
-          const uncapped = amcsEligible.filter(m => (amcsWks[m.id] || 0) < maxAmcsFn(m));
-          if (uncapped.length === 0) break;
-          uncapped.sort((a, b) => (amcsWks[a.id] || 0) - (amcsWks[b.id] || 0));
-          amcsWks[uncapped[ui % uncapped.length].id]++;
-          stillNeeded--; ui++;
-        }
-      }
-
-      // Hard clamp
-      amcsEligible.forEach(m => {
-        const max = maxAmcsFn(m);
-        if ((amcsWks[m.id] || 0) > max) amcsWks[m.id] = max;
-      });
-    }
-  }
-
-  // ── DETOX weeks (assigned after AMCS) ────────────────────────────────
-  // RH = fixed 13 weeks (Detox Core, no AMCS).
-  // Support members contribute from whatever wkCap remains after AMCS weeks.
+  // ── Detox Core pre-assignment ─────────────────────────────────────────
+  // RH = 13 wks, AJ = 6 wks — fixed, subject to their wkCap.
+  const coreMembers = active.filter(m => m.detoxCore);
+  const suppMembers = active.filter(m => m.detoxSupp);
   const detoxWks = {};
-
-  // RH: fixed core allocation
   coreMembers.forEach(m => {
-    const w = m.id === 'AJ' ? 6 : m.id === 'RH' ? 13 : Math.round(DETOX_DEMAND / coreMembers.length);
-    detoxWks[m.id] = w;
+    const fixed = m.id === 'AJ' ? 6 : m.id === 'RH' ? 13 : 0;
+    detoxWks[m.id] = Math.min(fixed, m.wkCap);
   });
-  const coreTotal = Object.values(detoxWks).reduce((s, v) => s + v, 0);
+  const coreDetoxTotal = Object.values(detoxWks).reduce((s, v) => s + v, 0);
 
-  // Support members share the remaining deficit equally (level-down: start at
-  // equal share, reduce those with most until total is exact).
-  const suppDeficit = Math.max(0, DETOX_DEMAND - coreTotal);
-  if (suppMembers.length > 0 && suppDeficit > 0) {
-    // Each support member's remaining capacity after AMCS + peri
-    const suppCapMap = {};
-    suppMembers.forEach(m => {
-      const used = (amcsWks[m.id] || 0) + (periWks[m.id] || 0);
-      suppCapMap[m.id] = Math.max(0, m.wkCap - used);
-    });
-    const eligible = suppMembers.filter(m => suppCapMap[m.id] > 0);
-    if (eligible.length > 0) {
-      // Start everyone at the equal share (capped by their remaining capacity)
-      const equalShare = Math.ceil(suppDeficit / eligible.length);
-      const give = {};
-      eligible.forEach(m => { give[m.id] = Math.min(suppCapMap[m.id], equalShare); });
-      // Level down: reduce the highest until total == suppDeficit
-      let total = Object.values(give).reduce((s, v) => s + v, 0);
-      while (total > suppDeficit) {
-        const maxVal = Math.max(...Object.values(give));
-        for (const m of eligible) {
-          if (give[m.id] === maxVal && total > suppDeficit) {
-            give[m.id]--; total--;
-          }
+  // ── Helper: fill a pool equally up to individual caps, iteratively ────
+  // members: array of {id, cap} objects. Returns {id → assigned}.
+  function fillEqually(pool, memberCaps) {
+    const assigned = {};
+    memberCaps.forEach(({ id }) => { assigned[id] = 0; });
+    let remaining = pool;
+    let eligible = memberCaps.filter(({ cap }) => cap > 0);
+    while (remaining > 0 && eligible.length > 0) {
+      const share = remaining / eligible.length;
+      let anyFilled = false;
+      eligible = eligible.filter(({ id, cap }) => {
+        const current = assigned[id];
+        const headroom = cap - current;
+        if (headroom <= 0) return false;
+        if (headroom <= share) {
+          // This member hits their cap this round
+          assigned[id] = cap;
+          remaining -= headroom;
+          anyFilled = true;
+          return false; // remove from eligible
         }
-      }
-      eligible.forEach(m => {
-        detoxWks[m.id] = (detoxWks[m.id] || 0) + give[m.id];
+        return true;
       });
-    }
-  }
-
-  // ── Call / weekend+STAT calculations ────────────────────────────────
-  // Each service has its own 116-day call pool, distributed proportionate
-  // to weeks worked in that service. Combined cap (weCap) limits AMCS +
-  // Detox together. Deficits are shown honestly if caps prevent full coverage.
-  // Peri call is separate and never capped.
-
-  const periCallMembers = periScheduled;
-
-  // Call assignment: start everyone at their cap, then level down from the
-  // highest until the pool is exactly filled. When multiple members are tied
-  // at the highest value, reduce them all by 1 each simultaneously.
-  // This ensures everyone does as much call as they offered, with reductions
-  // falling first on those doing the most.
-  function levelDownCall(capMap, total) {
-    // capMap: { id → max days for this service }
-    const ids = Object.keys(capMap).filter(id => capMap[id] > 0);
-    if (ids.length === 0 || total === 0) return {};
-    const result = {};
-    ids.forEach(id => { result[id] = capMap[id]; });
-    let current = ids.reduce((s, id) => s + result[id], 0);
-    while (current > total) {
-      const maxVal = Math.max(...ids.map(id => result[id]));
-      if (maxVal === 0) break;
-      // Reduce all members at the max by 1 each (ties reduced together)
-      for (const id of ids) {
-        if (result[id] === maxVal && current > total) {
-          result[id]--;
-          current--;
-        }
+      if (!anyFilled && eligible.length > 0) {
+        // Distribute remaining equally (fractional — round to whole weeks fairly)
+        // Give floor to all, then distribute remainder one at a time
+        const floorShare = Math.floor(remaining / eligible.length);
+        let leftover = remaining - floorShare * eligible.length;
+        eligible.forEach(({ id }) => { assigned[id] += floorShare; });
+        // Give leftover 1-at-a-time to those with most headroom (arbitrary tiebreak)
+        const sorted = [...eligible].sort((a, b) => (b.cap - assigned[b.id]) - (a.cap - assigned[a.id]));
+        for (let i = 0; i < leftover; i++) assigned[sorted[i % sorted.length].id]++;
+        remaining = 0;
       }
     }
-    return result;
+    return assigned;
   }
+
+  // ── AMCS + Detox Support week allocation ─────────────────────────────
+  // Everyone works to their full cap (minus peri and core deductions).
+  // Total pool = sum of all available caps across AMCS-eligible members (excl AJ).
+  // Detox support gets an equal share of min(pool - AMCS_demand, detox_deficit).
+  // Each support member's AMCS weeks = their available cap minus their detox weeks.
+  // Non-support AMCS members contribute their full available cap to AMCS.
+
+  const amcsMembers = active.filter(m => m.amcs);
+  const detoxDeficit = Math.max(0, DETOX_DEMAND - coreDetoxTotal);
+
+  // Available cap per member after peri and fixed detox core deductions
+  const availCap = {};
+  amcsMembers.forEach(m => {
+    const periUsed      = periWks[m.id] || 0;
+    const detoxCoreUsed = m.detoxCore ? (detoxWks[m.id] || 0) : 0;
+    availCap[m.id] = Math.max(0, m.wkCap - periUsed - detoxCoreUsed);
+  });
+
+  // Total pool excluding AJ (fully consumed by detox core)
+  const poolMembers = amcsMembers.filter(m => m.id !== 'AJ');
+  const totalPool = poolMembers.reduce((s, m) => s + availCap[m.id], 0);
+
+  // Detox support allocation: equal share of leftover after AMCS demand is met
+  const leftover = Math.max(0, totalPool - AMCS_DEMAND);
+  const detoxToFill = Math.min(leftover, detoxDeficit);
+  const baseDetoxShare = suppMembers.length > 0 ? Math.floor(detoxToFill / suppMembers.length) : 0;
+  const detoxRemainder = detoxToFill - baseDetoxShare * suppMembers.length;
+
+  // Give remainder weeks to members with largest available cap
+  const suppSorted = [...suppMembers].sort((a, b) => availCap[b.id] - availCap[a.id]);
+  suppMembers.forEach(m => {
+    detoxWks[m.id] = (detoxWks[m.id] || 0) + baseDetoxShare;
+  });
+  for (let i = 0; i < detoxRemainder; i++) {
+    detoxWks[suppSorted[i].id]++;
+  }
+
+  // AMCS weeks: full available cap minus detox *support* weeks only
+  // (availCap already had core detox deducted, so only subtract suppDetox)
+  const amcsWks = {};
+  amcsMembers.forEach(m => {
+    const suppDetox = m.detoxSupp ? (detoxWks[m.id] || 0) : 0;
+    amcsWks[m.id] = Math.max(0, availCap[m.id] - suppDetox);
+  });
+
+  // ── CALL: combined AMCS + Detox pool ─────────────────────────────────
+  // Everyone contributes their full weCap to the combined pool.
+  // AMCS call filled first (116 days, equal shares up to cap, iteratively).
+  // Leftover call capacity split equally among Detox Support members as Detox call.
+  // Peri call: separate 116-day pool, equal split, never capped.
 
   const callAmcs = {}, callDetox = {}, callPeri = {};
 
-  // ── DETOX call (assigned first) ───────────────────────────────────────
-  // RH = his full weCap from Detox (no AMCS call).
-  // Detox Support members (including AJ) share the remaining days equally.
-  // Assigned before AMCS so detox days are fixed first;
-  // AMCS then uses whatever combined-cap headroom remains.
-  const detoxCapMap = {};
+  // Total call pool across all AMCS members
+  const totalCallPool = amcsMembers.reduce((s, m) => s + m.weCap, 0);
+  // Fill AMCS call (116 days) equally up to each member's weCap
+  const amcsCallAssigned = fillEqually(CALL_POOL, amcsMembers.map(m => ({ id: m.id, cap: m.weCap })));
+  amcsMembers.forEach(m => { callAmcs[m.id] = amcsCallAssigned[m.id] || 0; });
 
-  // RH: full weCap from Detox
-  const rhMember = active.find(m => m.id === 'RH');
-  if (rhMember && (detoxWks['RH'] || 0) > 0) {
-    const rhCapActive = capMode !== 'none' && (capMode === 'all' || (capMode === 'senior' && rhMember.senior));
-    detoxCapMap['RH'] = rhCapActive ? rhMember.weCap : CALL_POOL;
+  // Leftover call capacity after AMCS, split equally among Support members as Detox call
+  if (suppMembers.length > 0) {
+    const totalCallLeftover = suppMembers.reduce((s, m) =>
+      s + Math.max(0, m.weCap - (callAmcs[m.id] || 0)), 0);
+    const detoxCallToFill = Math.min(totalCallLeftover, CALL_POOL);
+    const baseCallShare   = Math.floor(detoxCallToFill / suppMembers.length);
+    const callRemainder   = detoxCallToFill - baseCallShare * suppMembers.length;
+
+    // Give remainder days to members with most call headroom
+    const suppByCallCap = [...suppMembers].sort((a, b) => b.weCap - a.weCap);
+    suppMembers.forEach(m => { callDetox[m.id] = baseCallShare; });
+    for (let i = 0; i < callRemainder; i++) callDetox[suppByCallCap[i].id]++;
   }
 
-  // Detox Support: capped members share equally at their minimum cap.
-  // Uncapped members (non-seniors in Senior Caps mode) absorb any remaining
-  // days so full detox coverage is always achieved when possible.
-  const suppDetoxMembers = active.filter(m => m.detoxSupp);
-  if (suppDetoxMembers.length > 0) {
-    const suppCaps = suppDetoxMembers.map(m => {
-      const capActive = capMode !== 'none' && (capMode === 'all' || (capMode === 'senior' && m.senior));
-      return capActive ? m.weCap : CALL_POOL;
-    });
-    const cappedVals = suppCaps.filter(c => c < CALL_POOL);
-    const sharedCap = cappedVals.length > 0 ? Math.min(...cappedVals) : CALL_POOL;
-    suppDetoxMembers.forEach((m, i) => {
-      detoxCapMap[m.id] = suppCaps[i] < CALL_POOL ? sharedCap : CALL_POOL;
-    });
+  // Peri call: equal split among scheduled peri members, uncapped
+  const periCallCount = periScheduled.length;
+  if (periCallCount > 0) {
+    const baseShare = Math.floor(CALL_POOL / periCallCount);
+    let leftover = CALL_POOL - baseShare * periCallCount;
+    periScheduled.forEach(m => { callPeri[m.id] = baseShare; });
+    // distribute leftover 1-at-a-time
+    for (let i = 0; i < leftover; i++) {
+      callPeri[periScheduled[i % periCallCount].id]++;
+    }
   }
-
-  const detoxResult = levelDownCall(detoxCapMap, CALL_POOL);
-  active.forEach(m => {
-    callDetox[m.id] = detoxResult[m.id] || 0;
-  });
-
-  // ── AMCS call (assigned after Detox) ─────────────────────────────────
-  // RH excluded — all his call is Detox.
-  // Each member's AMCS cap = weCap − Detox call already assigned.
-  const amcsCapMap = {};
-  amcsMembers.forEach(m => {
-    if (m.id === 'RH' || !(amcsWks[m.id] || 0)) return;
-    const capActive = capMode !== 'none' && (capMode === 'all' || (capMode === 'senior' && m.senior));
-    if (!capActive) { amcsCapMap[m.id] = CALL_POOL; return; }
-    amcsCapMap[m.id] = Math.max(0, m.weCap - (callDetox[m.id] || 0));
-  });
-  const amcsResult = levelDownCall(amcsCapMap, CALL_POOL);
-  amcsMembers.forEach(m => { callAmcs[m.id] = amcsResult[m.id] || 0; });
-
-  // ── Peri call ─────────────────────────────────────────────────────────
-  // Equal share among scheduled peri members, never capped.
-  const periCapMap = {};
-  periCallMembers.forEach(m => { periCapMap[m.id] = CALL_POOL; });
-  const periResult = levelDownCall(periCapMap, CALL_POOL);
-  periCallMembers.forEach(m => { callPeri[m.id] = periResult[m.id] || 0; });
 
   // ── Build result objects ──────────────────────────────────────────────
   const results = {};
@@ -1051,34 +885,23 @@ function compute() {
     const cd = callDetox[m.id] || 0;
     const cp = callPeri[m.id]  || 0;
     const totalCall = ca + cd + cp;
-
     results[m.id] = { aw, dw, pw, totalWks, ca, cd, cp, totalCall };
   });
 
   // ── Service totals for sidebar ────────────────────────────────────────
-  const amcsSupply  = amcsMembers.reduce((s, m) => s + (amcsWks[m.id] || 0), 0);
-  const detoxSupply = Object.values(detoxWks).reduce((s, v) => s + v, 0);
+  const amcsSupply  = active.reduce((s, m) => s + (amcsWks[m.id]  || 0), 0);
+  const detoxSupply = active.reduce((s, m) => s + (detoxWks[m.id] || 0), 0);
   const periSupply  = periScheduled.reduce((s, m) => s + (periWks[m.id] || 0), 0);
 
-  // ── Service coverage for sidebar ─────────────────────────────────────
-  // Show actual distributed call totals (post-redistribution).
-  // In Senior Caps mode, non-senior members absorb senior surplus → full 116 coverage.
-  // In All Caps mode, redistribution also fills to 116 unless pool is truly exhausted.
-  // AMCS call: sum actual assigned values (excl RH whose obligation is covered by Detox call)
-  const amcsCallSupplied = Math.round(amcsMembers.reduce((s, m) => s + (callAmcs[m.id] || 0), 0));
-
-  // Detox call: demand is 116. All Detox members (RH + Support) share equally.
-  const detoxNonAjTarget = CALL_POOL;
-  const detoxCallSupplied = Math.round(active.reduce((s, m) => s + (callDetox[m.id] || 0), 0));
-
-  // Peri: always fully covered (no caps on peri call)
-  const periCallSupplied = CALL_POOL;
+  const amcsCallSupplied  = active.reduce((s, m) => s + (callAmcs[m.id]  || 0), 0);
+  const detoxCallSupplied = active.reduce((s, m) => s + (callDetox[m.id] || 0), 0);
+  const detoxNonAjTarget  = CALL_POOL;
 
   return {
     results,
-    demands: { amcs: AMCS_DEMAND, detox: DETOX_DEMAND, peri: PERI_DEMAND, call: CALL_POOL },
-    supply:  { amcs: amcsSupply, detox: detoxSupply, peri: periSupply },
-    callSupply: { amcs: amcsCallSupplied, detox: detoxCallSupplied, peri: periCallSupplied },
+    demands:    { amcs: AMCS_DEMAND, detox: DETOX_DEMAND, peri: PERI_DEMAND, call: CALL_POOL },
+    supply:     { amcs: amcsSupply,  detox: detoxSupply,  peri: periSupply },
+    callSupply: { amcs: amcsCallSupplied, detox: detoxCallSupplied, peri: CALL_POOL },
     detoxNonAjTarget,
   };
 }
@@ -1090,7 +913,6 @@ function primaryColor(m) {
   if (!m.amcs && !m.detoxCore && !m.detoxSupp && !m.peri) return C.faint;
   if (m.peri && !m.amcs && !m.detoxCore && !m.detoxSupp) return C.peri;
   if (m.detoxCore) return C.dcore;
-  if (m.senior) return C.senior;
   return C.amcs;
 }
 
@@ -1133,56 +955,44 @@ function renderGrid(calc) {
 
     const r = calc.results[m.id] || { aw:0, dw:0, pw:0, totalWks:0, ca:0, cd:0, cp:0, totalCall:0 };
     const pc = primaryColor(m);
-    const free = 52 - r.totalWks;
+    const freeWks = 52 - r.totalWks;
 
-    // Build segments
-    const segs = [];
-    if (r.dw > 0) segs.push({ color: m.detoxCore ? C.dcore : C.dsupp, wks: r.dw, label: m.detoxCore ? 'Detox Core' : 'Detox Supp' });
-    if (r.aw > 0) segs.push({ color: C.amcs, wks: r.aw, label: 'AMCS' });
-    if (r.pw > 0) segs.push({ color: C.peri, wks: r.pw, label: 'Perinatal' });
+    // Build week colour sequence: Detox first, then AMCS, then Peri
+    const weekColors = [];
+    const detoxColor = m.detoxCore ? C.dcore : C.dsupp;
+    for (let i = 0; i < r.dw; i++) weekColors.push(detoxColor);
+    for (let i = 0; i < r.aw; i++) weekColors.push(C.amcs);
+    for (let i = 0; i < r.pw; i++) weekColors.push(C.peri);
 
-    const barSegs = segs.map(s => {
-      const pct = (s.wks / 52 * 100).toFixed(2);
-      return `<div class="bar-seg" style="width:${pct}%;background:${s.color};min-width:${s.wks>0?10:0}px">${s.wks > 3 ? s.wks : ''}</div>`;
-    }).join('');
-    const freeBar = free > 0 ? `<div class="bar-free"><span>${free}w free</span></div>` : '';
+    const weekBoxes = weekColors.map(c =>
+      `<div class="week-box" style="background:${c}" title="${c}"></div>`
+    ).join('') + Array(freeWks).fill('<div class="week-box free"></div>').join('');
 
-    const legItems = segs.map(s =>
-      `<div class="seg-leg-item"><div class="seg-dot" style="background:${s.color}"></div>${s.label} ${s.wks}w</div>`
+    // Build call dot colour sequence: Detox first, then AMCS, then Peri
+    const totalCallSlots = Math.max(r.totalCall, 0);
+    const callColors = [];
+    for (let i = 0; i < r.cd; i++) callColors.push(m.detoxCore ? C.dcore : C.dsupp);
+    for (let i = 0; i < r.ca; i++) callColors.push(C.amcs);
+    for (let i = 0; i < r.cp; i++) callColors.push(C.peri);
+
+    const callDots = callColors.map(c =>
+      `<div class="call-dot-pip" style="background:${c}"></div>`
     ).join('');
 
-    // Call rows
-    const callEntries = [];
-    // All members: AMCS and Detox call count equally toward service requirements.
-    // AJ has a flat 52 Detox call days. RH has 0 AMCS call (covered by Detox).
-    if (r.ca > 0) callEntries.push({ label: 'AMCS call', days: r.ca, color: C.amcs });
-    if (r.cd > 0) {
-      const detoxLabel = 'Detox call';
-      callEntries.push({ label: detoxLabel, days: r.cd, color: m.detoxCore ? C.dcore : C.dsupp });
-    }
-    if (r.cp > 0) callEntries.push({ label: 'Perinatal call', days: r.cp, color: C.peri });
+    const legItems = [];
+    if (r.dw > 0) legItems.push(`<div class="seg-leg-item"><div class="seg-dot" style="background:${detoxColor}"></div>${m.detoxCore ? 'Detox Core' : 'Detox Supp'} ${r.dw}w</div>`);
+    if (r.aw > 0) legItems.push(`<div class="seg-leg-item"><div class="seg-dot" style="background:${C.amcs}"></div>AMCS ${r.aw}w</div>`);
+    if (r.pw > 0) legItems.push(`<div class="seg-leg-item"><div class="seg-dot" style="background:${C.peri}"></div>Perinatal ${r.pw}w</div>`);
 
-    const callRows = callEntries.length === 0
-      ? `<div class="no-call">No weekend/STAT call obligations</div>`
-      : callEntries.map(e =>
-          `<div class="call-row">
-            <div class="call-row-left">
-              <div class="call-dot" style="background:${e.color}"></div>
-              <span class="call-lbl">${e.label}</span>
-            </div>
-            <span class="call-days">~${e.days}d</span>
-          </div>`
-        ).join('') + (r.totalCall > 0 ?
-          `<div class="call-total-row">
-            <span class="call-total-lbl">Total weekends/STATs/yr</span>
-            <span class="call-total-val">~${r.totalCall}d</span>
-          </div>` : '');
+    const callLegItems = [];
+    if (r.cd > 0) callLegItems.push(`<div class="seg-leg-item"><div class="seg-dot" style="background:${detoxColor};border-radius:50%"></div>Detox ${r.cd}d</div>`);
+    if (r.ca > 0) callLegItems.push(`<div class="seg-leg-item"><div class="seg-dot" style="background:${C.amcs};border-radius:50%"></div>AMCS ${r.ca}d</div>`);
+    if (r.cp > 0) callLegItems.push(`<div class="seg-leg-item"><div class="seg-dot" style="background:${C.peri};border-radius:50%"></div>Peri ${r.cp}d</div>`);
 
     // Badges
-    const showCaps = capMode !== 'none' && (capMode === 'all' || (capMode === 'senior' && m.senior));
+    const showCaps = true;
     const badges = [
-      m.senior ? `<span class="badge" style="background:${C.senior}18;color:${C.senior};border:1px solid ${C.senior}40">${m.senior ? 'SENIOR' : ''}</span>` : '',
-      !m.real  ? `<span class="badge" style="background:${C.newm}18;color:${C.newm};border:1px solid ${C.newm}40">NEW</span>` : '',
+      !m.real ? `<span class="badge" style="background:${C.newm}18;color:${C.newm};border:1px solid ${C.newm}40">NEW</span>` : '',
     ].filter(Boolean).join('');
 
     const capPills = showCaps ? `
@@ -1194,7 +1004,6 @@ function renderGrid(calc) {
     const siteLabel = m.site === 'rjh' ? 'RJH only' :
                       m.site === 'vgh' ? 'VGH only' :
                       m.site === 'hwh' ? 'HerWayHome' : 'RJH + VGH';
-
 
     el.className = 'card';
     el.style.borderTopColor = pc + '80';
@@ -1212,15 +1021,24 @@ function renderGrid(calc) {
           </div>
         </div>
         <div class="card-sites">${siteLabel}</div>
+
         <div>
-          <div class="bar-wrap">${barSegs}${freeBar}</div>
-          <div class="seg-legend" style="margin-top:5px">${legItems || '<span style="font-size:9px;color:var(--muted)">No services assigned</span>'}</div>
+          <div class="call-section-title" style="margin-bottom:4px">Weeks / yr</div>
+          <div class="week-grid">${weekBoxes}</div>
+          <div class="seg-legend" style="margin-top:5px">${legItems.join('') || '<span style="font-size:9px;color:var(--muted)">No services assigned</span>'}</div>
         </div>
+
         <div class="card-divider"></div>
+
         <div>
-          <div class="call-section-title">Weekends / STATs</div>
-          ${callRows}
+          <div class="call-section-title" style="margin-bottom:4px">Weekends &amp; STATs / yr</div>
+          ${callDots.length
+            ? `<div class="call-dot-grid">${callDots}</div>
+               <div class="seg-legend" style="margin-top:5px">${callLegItems.join('')}</div>`
+            : `<div class="no-call">No weekend/STAT call obligations</div>`
+          }
         </div>
+
         ${m.notes ? `<div class="card-notes"><span style="font-size:9px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:3px">Notes</span>${m.notes}</div>` : ''}
       </div>`;
     el.onclick = () => openPanel(m.id);
@@ -1478,7 +1296,6 @@ function buildPanelHTML(m) {
     <!-- Seniority & caps -->
     <div>
       <div class="panel-section-title">Seniority &amp; caps</div>
-      ${toggle('Senior member', 'senior', '>3 years AMCS service')}
       ${numField('Week cap', 'wkCap', 'Maximum weeks per year (all services combined)')}
       ${numField('Weekend/STAT cap', 'weCap', 'Maximum call days per year (AMCS + Detox combined — Perinatal call is uncapped)')}
       <div style="font-size:9px;color:var(--muted);margin-top:4px">Caps are stored always; respected based on cap mode setting.</div>
