@@ -926,7 +926,7 @@ function renderGrid(calc) {
     if (activeFilter === 'all') return true;
     if (m.onLeave) return true; // always show leave cards
     if (activeFilter === 'amcs')      return m.amcs;
-    if (activeFilter === 'detox')     return m.detoxCore || m.detoxSupp;
+    if (activeFilter === 'detox')     return m.detoxCore || (m.detoxSupp && (calc.results[m.id]?.dw || 0) > 0);
     if (activeFilter === 'perinatal') return m.peri;
     return true;
   }).sort((a, b) => {
