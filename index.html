@@ -615,8 +615,8 @@ const DEFAULT_MEMBERS = [
     notes:'Detox only · Sep–Dec 2026 availability only' },
   { id:'RanM', label:'RanM',    real:true,  onLeave:false,
     amcsFirst:false, amcsSecond:false, amcsVGH:false, detox:true,  peri:false,
-    wkCapSepDec:3,  weCapSepDec:6,  wkCapJanJun:0,  weCapJanJun:0,
-    notes:'Detox only · Sep–Dec 2026 availability only' },
+    wkCapSepDec:3,  weCapSepDec:6,  wkCapJanJun:4,  weCapJanJun:8,
+    notes:'Detox only' },
   { id:'MeeG', label:'MeeG',    real:true,  onLeave:false,
     amcsFirst:false, amcsSecond:false, amcsVGH:false, detox:true,  peri:false,
     wkCapSepDec:2,  weCapSepDec:3,  wkCapJanJun:0,  weCapJanJun:0,
@@ -630,8 +630,8 @@ const DEFAULT_MEMBERS = [
 // ── State ─────────────────────────────────────────────────────────────────
 let members          = DEFAULT_MEMBERS.map(m => ({ ...m }));
 let settings         = { ...DEFAULT_SETTINGS };
-let secondDoc        = true;
-let activePeriod     = 'sepDec'; // 'sepDec' | 'janJun'
+let secondDoc        = false;
+let activePeriod     = 'janJun'; // 'sepDec' | 'janJun'
 let detoxFirst       = false;
 let placeholderCount = 0;
 let editingId        = null;
@@ -759,7 +759,7 @@ function resetToDefaults() {
   if (!confirm('Reset all data to defaults? This cannot be undone.')) return;
   members = DEFAULT_MEMBERS.map(m => ({ ...m }));
   settings = { ...DEFAULT_SETTINGS };
-  secondDoc = true; activePeriod = 'sepDec'; detoxFirst = false; placeholderCount = 0;
+  secondDoc = false; activePeriod = 'janJun'; detoxFirst = false; placeholderCount = 0;
   saveState(); closePanel(); render();
 }
 
