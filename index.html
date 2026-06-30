@@ -3,10 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Addiction Medicine — Schedule Modeller</title>
+<title>AMCS Schedule Modeller — 2026–27</title>
 <style>
-/* fonts removed */
-
 :root {
   --bg:        #07111e;
   --surface:   #0d1f33;
@@ -17,15 +15,12 @@
   --dim:       #5a82a6;
   --muted:     #2d5070;
   --amcs:      #3b82f6;
-  --dcore:     #ef4444;
-  --dsupp:     #f97316;
+  --detox:     #ef4444;
   --peri:      #a78bfa;
   --new:       #34d399;
-  --gold:      #fbbf24;
   --warn:      #f59e0b;
-  --danger:    #ef4444;
   --success:   #22c55e;
-  --panel-w:   380px;
+  --panel-w:   400px;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -39,400 +34,290 @@ body {
   line-height: 1.5;
 }
 
-/* ── Layout ── */
 .app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
+/* ── Topbar ── */
 .topbar {
-  background: var(--surface);
-  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, #060f1c 0%, #0b1c30 60%, #0d1e2f 100%);
+  border-bottom: 1px solid #1a3554;
   padding: 0 20px;
   display: flex;
   align-items: center;
-  gap: 20px;
-  height: 52px;
+  gap: 16px;
+  height: 72px;
+  flex-shrink: 0;
+  position: relative;
+  overflow: hidden;
+}
+.topbar::after {
+  content: '';
+  position: absolute;
+  bottom: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent 0%, #3b82f6 30%, #a78bfa 70%, transparent 100%);
+  opacity: .6;
+}
+.topbar-brand { display: flex; align-items: center; gap: 13px; flex-shrink: 0; }
+.topbar-logo { display: flex; align-items: center; }
+.topbar-brand-text { display: flex; flex-direction: column; gap: 3px; }
+.topbar-title {
+  font-family: system-ui, sans-serif; font-size: 17px; font-weight: 700;
+  letter-spacing: .01em; white-space: nowrap; line-height: 1.2;
+  background: linear-gradient(90deg, #e2f0ff 0%, #93c5fd 60%, #c4b5fd 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+}
+.topbar-subtitle {
+  font-size: 11px; color: var(--dim); letter-spacing: .07em; text-transform: uppercase;
+  font-family: monospace;
+}
+.topbar-divider { width: 1px; height: 36px; background: var(--border); flex-shrink: 0; }
+
+/* Period switcher — distinct from the regular toggles */
+.period-switcher {
+  display: flex; align-items: center;
+  background: #060f1c;
+  border: 1px solid #1a3554;
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
   flex-shrink: 0;
 }
-
-.topbar-title {
-  font-family: monospace;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text);
-  letter-spacing: .04em;
-  white-space: nowrap;
+.period-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 1px;
+  padding: 5px 14px; border-radius: 5px; border: none;
+  cursor: pointer; transition: all .18s; background: transparent;
 }
-
-.topbar-title span { color: var(--amcs); }
-
-.topbar-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex-wrap: wrap;
+.period-btn .pb-label {
+  font-size: 10px; font-family: monospace; letter-spacing: .06em; text-transform: uppercase;
+  color: var(--dim); transition: color .18s; white-space: nowrap;
 }
+.period-btn .pb-dates {
+  font-size: 12px; font-weight: 700; font-family: system-ui, sans-serif;
+  color: var(--dim); transition: color .18s; white-space: nowrap;
+}
+.period-btn.active-sepdec {
+  background: rgba(245,158,11,.12);
+  box-shadow: 0 0 0 1px rgba(245,158,11,.35);
+}
+.period-btn.active-sepdec .pb-label,
+.period-btn.active-sepdec .pb-dates { color: #f59e0b; }
+.period-btn.active-janjun {
+  background: rgba(59,130,246,.12);
+  box-shadow: 0 0 0 1px rgba(59,130,246,.35);
+}
+.period-btn.active-janjun .pb-label,
+.period-btn.active-janjun .pb-dates { color: #60a5fa; }
+.period-btn:hover:not(.active-sepdec):not(.active-janjun) { background: rgba(255,255,255,.04); }
+
+.topbar-controls { display: flex; align-items: center; gap: 8px; }
 
 .setting-group {
-  display: flex;
-  align-items: center;
-  gap: 6px;
+  display: flex; align-items: center; gap: 6px;
   padding: 4px 10px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 6px;
+  background: var(--card); border: 1px solid var(--border); border-radius: 6px;
 }
-
-.setting-label {
-  font-size: 10px;
-  color: var(--dim);
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  white-space: nowrap;
-}
-
-.seg-btn {
-  background: transparent;
-  border: 1px solid var(--border2);
-  color: var(--dim);
-  font-family: monospace;
-  font-size: 11px;
-  padding: 3px 8px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all .15s;
-}
-.seg-btn.active {
-  background: var(--amcs);
-  border-color: var(--amcs);
-  color: #fff;
-}
-.seg-btn:hover:not(.active) {
-  border-color: var(--border2);
-  color: var(--text);
-  background: var(--border);
-}
+.setting-label { font-size: 11px; color: var(--dim); white-space: nowrap; }
 
 .toggle-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  background: transparent;
-  border: 1px solid var(--border2);
-  color: var(--dim);
-  font-family: monospace;
-  font-size: 11px;
-  padding: 3px 10px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all .15s;
+  display: flex; align-items: center; gap: 5px;
+  background: transparent; border: 1px solid var(--border2);
+  color: var(--dim); font-family: monospace; font-size: 11px;
+  padding: 3px 10px; border-radius: 4px; cursor: pointer; transition: all .15s;
 }
-.toggle-btn.on {
-  background: rgba(59,130,246,.15);
-  border-color: var(--amcs);
-  color: var(--amcs);
+.toggle-btn.on { background: rgba(59,130,246,.15); border-color: var(--amcs); color: var(--amcs); }
+.toggle-btn .dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; }
+
+.topbar-right { display: flex; align-items: center; gap: 6px; margin-left: auto; }
+
+.topbar-text-btn {
+  background: var(--card); border: 1px solid var(--border); color: var(--dim);
+  font-family: monospace; font-size: 11px; padding: 4px 10px; border-radius: 5px;
+  cursor: pointer; transition: all .15s; white-space: nowrap;
 }
-.toggle-btn .dot {
-  width: 6px; height: 6px; border-radius: 50%;
-  background: currentColor;
+.topbar-text-btn:hover { color: var(--text); border-color: var(--border2); }
+
+.icon-btn {
+  background: var(--card); border: 1px solid var(--border); color: var(--dim);
+  font-size: 13px; width: 30px; height: 30px; border-radius: 5px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  transition: all .15s; flex-shrink: 0;
 }
+.icon-btn:hover { color: var(--text); border-color: var(--border2); }
+.icon-btn.active { background: rgba(59,130,246,.15); border-color: var(--amcs); color: var(--amcs); }
 
 .add-btn {
-  background: rgba(52,211,153,.1);
-  border: 1px solid rgba(52,211,153,.4);
-  color: var(--new);
-  font-family: monospace;
-  font-size: 11px;
-  padding: 4px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all .15s;
-  margin-left: auto;
+  background: rgba(52,211,153,.1); border: 1px solid rgba(52,211,153,.4);
+  color: var(--new); font-family: monospace; font-size: 11px;
+  padding: 5px 12px; border-radius: 4px; cursor: pointer; transition: all .15s; white-space: nowrap;
 }
 .add-btn:hover { background: rgba(52,211,153,.2); }
 
-.body-row {
+.save-indicator {
+  font-family: monospace; font-size: 11px; color: var(--success);
+  opacity: 0; transition: opacity .3s; white-space: nowrap;
+}
+.save-indicator.show { opacity: 1; }
+
+/* ── Coverage header ── */
+.coverage-header {
+  background: var(--surface);
+  border-bottom: 2px solid var(--border);
+  padding: 10px 20px;
   display: flex;
-  flex: 1;
-  overflow: hidden;
+  align-items: stretch;
+  gap: 0;
+  flex-shrink: 0;
 }
 
-/* ── Sidebar (deficits) ── */
-.sidebar {
-  width: 220px;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  padding: 16px 14px;
-  overflow-y: auto;
-  flex-shrink: 0;
+.cov-blocks {
+  display: flex;
+  flex: 1;
+  align-items: stretch;
+  gap: 0;
+}
+
+.cov-block {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 7px;
+  padding: 0 22px;
+}
+.cov-block:first-child { padding-left: 0; }
+
+.cov-title {
+  font-size: 10px; font-family: monospace;
+  text-transform: uppercase; letter-spacing: .12em; font-weight: 700;
 }
 
-.sidebar-section-title {
-  font-size: 9px;
-  font-family: monospace;
-  color: var(--dim);
-  text-transform: uppercase;
-  letter-spacing: .1em;
-  margin-bottom: 8px;
+.cov-metric { display: flex; flex-direction: column; gap: 3px; }
+
+.cov-row {
+  display: flex; justify-content: space-between; align-items: baseline;
 }
 
-.deficit-item {
-  margin-bottom: 10px;
+.cov-lbl {
+  font-size: 10px; color: var(--dim);
+  text-transform: uppercase; letter-spacing: .07em;
 }
 
-.deficit-svc {
-  font-size: 10px;
-  color: var(--dim);
-  margin-bottom: 3px;
-  text-transform: uppercase;
-  letter-spacing: .06em;
+.cov-num {
+  font-family: monospace; font-size: 13px; font-weight: 700; line-height: 1;
+  color: var(--text);
 }
+.cov-denom { font-size: 10px; font-weight: 400; color: var(--muted); }
 
-.deficit-bar-wrap {
-  height: 6px;
-  background: var(--card);
-  border-radius: 3px;
-  overflow: hidden;
-  margin-bottom: 2px;
-}
-
-.deficit-bar-fill {
-  height: 100%;
-  border-radius: 3px;
-  transition: width .3s;
-}
-
-.deficit-nums {
-  display: flex;
-  justify-content: space-between;
-  font-size: 10px;
-  font-family: monospace;
-}
-
-.stat-block {
-  padding: 8px 10px;
-  background: var(--card);
+.cov-bar-wrap {
+  height: 10px; background: var(--card); border-radius: 4px; overflow: hidden;
   border: 1px solid var(--border);
-  border-radius: 6px;
-  margin-bottom: 6px;
 }
-.stat-block label {
-  font-size: 9px;
-  color: var(--dim);
-  text-transform: uppercase;
-  letter-spacing: .08em;
-  display: block;
-  margin-bottom: 2px;
-}
-.stat-block .stat-val {
-  font-family: monospace;
-  font-size: 15px;
-  font-weight: 600;
+.cov-bar-fill { height: 100%; border-radius: 4px; transition: width .4s ease; }
+
+.cov-divider { width: 1px; background: var(--border); align-self: stretch; margin: 0 4px; }
+
+/* ── Filter bar ── */
+.filter-bar {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 6px 16px; display: flex; align-items: center; gap: 6px; flex-shrink: 0;
 }
 
-/* ── Main grid ── */
-.main {
-  flex: 1;
-  overflow-y: auto;
-  padding: 20px;
+.seg-btn {
+  background: transparent; border: 1px solid var(--border2);
+  color: var(--dim); font-family: monospace; font-size: 11px;
+  padding: 3px 8px; border-radius: 4px; cursor: pointer; transition: all .15s;
 }
+.seg-btn.active { background: var(--amcs); border-color: var(--amcs); color: #fff; }
+.seg-btn:hover:not(.active) { border-color: var(--border2); color: var(--text); background: var(--border); }
+
+/* ── Body ── */
+.body-row { display: flex; flex: 1; overflow: hidden; }
+.main { flex: 1; overflow-y: auto; padding: 20px; }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
   gap: 12px;
 }
 
 /* ── Cards ── */
 .card {
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-  cursor: pointer;
+  background: var(--card); border: 1px solid var(--border); border-radius: 10px;
+  overflow: hidden; cursor: pointer;
   transition: border-color .15s, transform .15s;
-  display: flex;
-  flex-direction: column;
-  position: relative;
+  display: flex; flex-direction: column; position: relative;
 }
-.card:hover {
-  border-color: var(--border2);
-  transform: translateY(-1px);
-}
-.card.on-leave {
-  opacity: .45;
-  cursor: default;
-}
+.card:hover { border-color: var(--border2); transform: translateY(-1px); }
+.card.on-leave { opacity: .45; cursor: default; }
 .card.on-leave:hover { transform: none; }
 
 .card-stripe { height: 3px; flex-shrink: 0; }
-
 .card-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; flex: 1; }
 
-.card-id-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-}
+.card-id-row { display: flex; justify-content: space-between; align-items: flex-start; }
 .card-id-left { display: flex; flex-direction: column; gap: 4px; }
-.card-id {
-  font-family: monospace;
-  font-size: 20px;
-  font-weight: 600;
-  line-height: 1;
-}
-.card-badges { display: flex; gap: 4px; flex-wrap: wrap; }
+.card-id { font-family: monospace; font-size: 20px; font-weight: 600; line-height: 1; }
+
 .badge {
-  font-family: monospace;
-  font-size: 9px;
-  padding: 2px 5px;
-  border-radius: 3px;
-  font-weight: 500;
-  letter-spacing: .05em;
+  font-family: monospace; font-size: 11px;
+  padding: 2px 5px; border-radius: 3px; font-weight: 500; letter-spacing: .05em;
 }
+
 .cap-pills { display: flex; gap: 4px; flex-wrap: wrap; margin-top: 2px; }
 .cap-pill {
-  font-family: monospace;
-  font-size: 9px;
-  padding: 2px 6px;
-  border-radius: 3px;
-  font-weight: 500;
+  font-family: monospace; font-size: 11px;
+  padding: 2px 6px; border-radius: 3px; font-weight: 500;
+}
+
+.role-pills { display: flex; gap: 3px; flex-wrap: wrap; }
+.role-pill {
+  font-family: monospace; font-size: 11px;
+  padding: 2px 6px; border-radius: 3px; font-weight: 500;
 }
 
 .card-wks { text-align: right; }
-.card-wks-num {
-  font-family: monospace;
-  font-size: 22px;
-  font-weight: 600;
-  line-height: 1;
-}
-.card-wks-lbl {
-  font-size: 9px;
-  color: var(--dim);
-  letter-spacing: .08em;
-  margin-top: 2px;
+.card-wks-num { font-family: monospace; font-size: 22px; font-weight: 600; line-height: 1; }
+.card-wks-lbl { font-size: 11px; color: var(--dim); letter-spacing: .06em; margin-top: 2px; }
+
+.week-grid { display: flex; flex-wrap: wrap; gap: 2px; }
+.week-box { width: 10px; height: 10px; border-radius: 2px; flex-shrink: 0; }
+.week-box.free { background: #0a1628; border: 1px solid #1a3554; }
+
+.call-dot-grid { display: flex; flex-wrap: wrap; gap: 2px; }
+.call-dot-pip { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+.call-section-title {
+  font-size: 11px; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .1em; margin-bottom: 4px;
 }
 
-.card-sites {
-  font-family: monospace;
-  font-size: 10px;
-  color: var(--dim);
-  letter-spacing: .04em;
-}
-
-/* ── Week boxes & call dots ── */
-.week-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-}
-.week-box {
-  width: 10px;
-  height: 10px;
-  border-radius: 2px;
-  flex-shrink: 0;
-}
-.week-box.free {
-  background: #0a1628;
-  border: 1px solid #1a3554;
-}
-
-.call-dot-grid {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 2px;
-}
-.call-dot-pip {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.call-dot-pip.free {
-  background: #0a1628;
-  border: 1px solid #1a3554;
-}
-
-.seg-legend { display: flex; gap: 8px; flex-wrap: wrap; }
-.seg-leg-item { display: flex; align-items: center; gap: 4px; font-size: 9px; color: var(--dim); }
+.seg-legend { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 2px; }
+.seg-leg-item { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--dim); }
 .seg-dot { width: 7px; height: 7px; border-radius: 2px; flex-shrink: 0; }
 
 .card-divider { height: 1px; background: var(--border); }
 
-.call-section-title {
-  font-size: 9px;
-  color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: .1em;
-  margin-bottom: 4px;
-}
-.no-call { font-size: 10px; color: var(--muted); font-style: italic; }
+.no-call { font-size: 11px; color: var(--muted); font-style: italic; }
 
 .card-notes {
-  font-size: 9px;
-  color: var(--dim);
-  font-style: italic;
-  line-height: 1.5;
-  border-top: 1px solid var(--border);
-  padding-top: 6px;
+  font-size: 11px; color: var(--dim); font-style: italic;
+  line-height: 1.5; border-top: 1px solid var(--border); padding-top: 6px;
 }
 
-.summary-box {
-  background: #0d2b1f;
-  border: 1px solid #14532d55;
-  border-left: 2.5px solid var(--new);
-  border-radius: 5px;
-  padding: 7px 9px;
-  margin-top: auto;
-}
-.summary-lbl {
-  font-size: 8px;
-  color: #4ade80;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-  margin-bottom: 3px;
-  font-family: monospace;
-}
-.summary-txt { font-size: 10px; color: #86efac; line-height: 1.55; }
+.leave-card-body { padding: 14px 12px; display: flex; flex-direction: column; gap: 3px; }
+.leave-id { font-family: monospace; font-size: 18px; font-weight: 500; color: var(--dim); }
+.leave-lbl { font-size: 11px; color: var(--muted); font-style: italic; }
 
-/* Leave card */
-.leave-card-body {
-  padding: 14px 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-.leave-id {
-  font-family: monospace;
-  font-size: 18px;
-  font-weight: 500;
-  color: var(--dim);
-}
-.leave-lbl { font-size: 10px; color: var(--muted); font-style: italic; }
-
-/* ── Edit Panel ── */
+/* ── Panel ── */
 .overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,.5);
-  z-index: 100;
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity .2s;
+  position: fixed; inset: 0; background: rgba(0,0,0,.5);
+  z-index: 100; opacity: 0; pointer-events: none; transition: opacity .2s;
 }
 .overlay.open { opacity: 1; pointer-events: all; }
 
 .panel {
-  position: fixed;
-  top: 0; right: 0;
-  width: var(--panel-w);
-  height: 100vh;
-  background: var(--surface);
-  border-left: 1px solid var(--border);
-  z-index: 101;
-  display: flex;
-  flex-direction: column;
+  position: fixed; top: 0; right: 0;
+  width: var(--panel-w); height: 100vh;
+  background: var(--surface); border-left: 1px solid var(--border);
+  z-index: 101; display: flex; flex-direction: column;
   transform: translateX(100%);
   transition: transform .25s cubic-bezier(.4,0,.2,1);
   overflow: hidden;
@@ -440,504 +325,770 @@ body {
 .panel.open { transform: translateX(0); }
 
 .panel-header {
-  padding: 16px 18px;
-  border-bottom: 1px solid var(--border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-shrink: 0;
+  padding: 16px 18px; border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between; flex-shrink: 0;
 }
-.panel-title {
-  font-family: monospace;
-  font-size: 15px;
-  font-weight: 600;
-}
+.panel-title { font-family: monospace; font-size: 15px; font-weight: 600; }
 .panel-close {
-  width: 28px; height: 28px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  color: var(--dim);
-  font-size: 14px;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .15s;
+  width: 28px; height: 28px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 5px; color: var(--dim); font-size: 14px;
+  cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s;
 }
 .panel-close:hover { color: var(--text); border-color: var(--border2); }
 
 .panel-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px 18px;
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
+  flex: 1; overflow-y: auto; padding: 16px 18px;
+  display: flex; flex-direction: column; gap: 16px;
 }
 
+.panel-footer {
+  padding: 12px 18px; border-top: 1px solid var(--border); flex-shrink: 0;
+}
+.done-btn {
+  width: 100%; background: rgba(59,130,246,.12);
+  border: 1px solid var(--amcs); color: var(--amcs);
+  font-family: monospace; font-size: 13px; padding: 9px;
+  border-radius: 5px; cursor: pointer; transition: all .15s;
+}
+.done-btn:hover { background: rgba(59,130,246,.22); }
+
 .panel-section-title {
-  font-size: 9px;
-  font-family: monospace;
-  color: var(--dim);
-  text-transform: uppercase;
-  letter-spacing: .1em;
-  margin-bottom: 8px;
+  font-size: 11px; font-family: monospace; color: var(--dim);
+  text-transform: uppercase; letter-spacing: .1em; margin-bottom: 8px;
 }
 
 .field-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 8px;
+  display: flex; align-items: center; justify-content: space-between;
+  margin-bottom: 8px; gap: 8px;
 }
-.field-label { font-size: 12px; color: var(--text); }
-.field-sublabel { font-size: 10px; color: var(--dim); }
+.field-label { font-size: 12px; color: var(--text); flex-shrink: 0; }
+.field-sublabel { font-size: 11px; color: var(--dim); }
 
 .toggle-switch {
-  width: 38px; height: 20px;
-  background: var(--card);
-  border: 1px solid var(--border2);
-  border-radius: 10px;
-  cursor: pointer;
-  position: relative;
-  transition: all .15s;
-  flex-shrink: 0;
+  width: 38px; height: 20px; background: var(--card); border: 1px solid var(--border2);
+  border-radius: 10px; cursor: pointer; position: relative; transition: all .15s; flex-shrink: 0;
 }
 .toggle-switch.on { background: var(--amcs); border-color: var(--amcs); }
 .toggle-switch::after {
-  content: '';
-  position: absolute;
-  top: 2px; left: 2px;
-  width: 14px; height: 14px;
-  background: var(--dim);
-  border-radius: 50%;
-  transition: all .15s;
+  content: ''; position: absolute; top: 2px; left: 2px;
+  width: 14px; height: 14px; background: var(--dim); border-radius: 50%; transition: all .15s;
 }
 .toggle-switch.on::after { left: 20px; background: #fff; }
 
 .num-input {
-  width: 70px;
-  background: var(--card);
-  border: 1px solid var(--border2);
-  border-radius: 5px;
-  color: var(--text);
-  font-family: monospace;
-  font-size: 13px;
-  padding: 4px 8px;
-  text-align: right;
+  width: 72px; background: var(--card); border: 1px solid var(--border2);
+  border-radius: 5px; color: var(--text); font-family: monospace; font-size: 13px;
+  padding: 4px 8px; text-align: right;
 }
 .num-input:focus { outline: none; border-color: var(--amcs); }
 
-.radio-row { display: flex; gap: 6px; }
-.radio-opt {
-  background: var(--card);
-  border: 1px solid var(--border2);
-  border-radius: 4px;
-  color: var(--dim);
-  font-size: 11px;
-  font-family: monospace;
-  padding: 3px 9px;
-  cursor: pointer;
-  transition: all .15s;
+.text-input {
+  background: var(--card); border: 1px solid var(--border2);
+  border-radius: 5px; color: var(--text); font-family: monospace; font-size: 13px;
+  padding: 4px 8px; flex: 1; min-width: 0;
 }
-.radio-opt.sel {
-  background: rgba(59,130,246,.15);
-  border-color: var(--amcs);
-  color: var(--amcs);
-}
+.text-input:focus { outline: none; border-color: var(--amcs); }
 
 .delete-btn {
-  width: 100%;
-  background: rgba(239,68,68,.1);
-  border: 1px solid rgba(239,68,68,.3);
-  color: #f87171;
-  font-family: monospace;
-  font-size: 11px;
-  padding: 8px;
-  border-radius: 5px;
-  cursor: pointer;
-  transition: all .15s;
-  margin-top: 8px;
+  width: 100%; background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.3);
+  color: #f87171; font-family: monospace; font-size: 11px;
+  padding: 8px; border-radius: 5px; cursor: pointer; transition: all .15s;
 }
 .delete-btn:hover { background: rgba(239,68,68,.2); }
 
+.action-row { display: flex; gap: 8px; }
+.action-btn {
+  flex: 1; background: var(--card); border: 1px solid var(--border2);
+  color: var(--dim); font-family: monospace; font-size: 11px;
+  padding: 7px 8px; border-radius: 5px; cursor: pointer; transition: all .15s; text-align: center;
+}
+.action-btn:hover { color: var(--text); border-color: var(--border2); background: var(--border); }
+
 .info-box {
-  padding: 8px 10px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: 5px;
-  font-size: 10px;
-  color: var(--dim);
-  line-height: 1.6;
+  padding: 8px 10px; background: var(--card); border: 1px solid var(--border);
+  border-radius: 5px; font-size: 11px; color: var(--dim); line-height: 1.6;
 }
 .info-box strong { color: var(--text); font-weight: 500; }
 
-hr.panel-divider { border: none; border-top: 1px solid var(--border); margin: 4px 0; }
+.warn-box {
+  padding: 7px 10px; background: rgba(245,158,11,.06);
+  border: 1px solid rgba(245,158,11,.25); border-radius: 5px;
+  font-size: 11px; color: #fcd34d; line-height: 1.5;
+}
 
+.mod-duties-box {
+  background: rgba(245,158,11,.05);
+  border: 1px solid rgba(245,158,11,.2);
+  border-radius: 6px; padding: 10px; margin-top: 4px;
+}
 
+hr.panel-divider { border: none; border-top: 1px solid var(--border); margin: 2px 0; }
 </style>
 </head>
 <body>
-<div class="app" id="app">
+<div class="app">
 
-  <!-- Top bar -->
   <div class="topbar">
-    <div class="topbar-title"><span>AM</span> Schedule Modeller</div>
+    <div class="topbar-brand">
+      <div class="topbar-logo">
+        <svg width="32" height="38" viewBox="0 0 26 30" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect x="0"    y="7"  width="7" height="23" rx="3.5" fill="#3b82f6" opacity=".9"/>
+          <rect x="9.5"  y="0"  width="7" height="23" rx="3.5" fill="#ef4444" opacity=".85"/>
+          <rect x="19"   y="11" width="7" height="19" rx="3.5" fill="#a78bfa" opacity=".9"/>
+          <circle cx="3.5"  cy="5.5"  r="2" fill="#3b82f6" opacity=".5"/>
+          <circle cx="13"   cy="-1.5" r="2" fill="#ef4444" opacity=".5"/>
+        </svg>
+      </div>
+      <div class="topbar-brand-text">
+        <div class="topbar-title">AMCS Schedule Modeller</div>
+        <div class="topbar-subtitle">Addiction Medicine · RJH &amp; VGH · 2026–27</div>
+      </div>
+    </div>
+    <div class="topbar-divider"></div>
+
+    <!-- Period switcher — distinct visual identity -->
+    <div class="period-switcher" id="period-switcher">
+      <button class="period-btn" id="period-sepdec" onclick="setPeriod('sepDec')">
+        <span class="pb-label">Period 1</span>
+        <span class="pb-dates">Sep–Dec 2026</span>
+      </button>
+      <button class="period-btn" id="period-janjun" onclick="setPeriod('janJun')">
+        <span class="pb-label">Period 2</span>
+        <span class="pb-dates">Jan–Jun 2027</span>
+      </button>
+    </div>
+    <div class="topbar-divider"></div>
+
     <div class="topbar-controls">
-
-
-
       <div class="setting-group">
         <span class="setting-label">RJH 2nd doc</span>
         <button class="toggle-btn" id="seconddoc-btn" onclick="toggleSecondDoc()">
           <span class="dot"></span><span id="seconddoc-lbl">OFF</span>
         </button>
       </div>
-
+      <div class="setting-group">
+        <span class="setting-label">Detox priority</span>
+        <button class="toggle-btn" id="detoxfirst-btn" onclick="toggleDetoxFirst()">
+          <span class="dot"></span><span id="detoxfirst-lbl">OFF</span>
+        </button>
+      </div>
     </div>
-    <button class="add-btn" onclick="addPlaceholder()">+ Add member</button>
+    <div class="topbar-right">
+      <span class="save-indicator" id="save-indicator">✓ saved</span>
+      <button class="topbar-text-btn" onclick="exportJSON()">↓ Export</button>
+      <button class="topbar-text-btn" onclick="importJSON()">↑ Import</button>
+      <button class="icon-btn" id="settings-btn" onclick="openSettings()" title="Model settings">⚙</button>
+      <button class="add-btn" onclick="addPlaceholder()">+ Add member</button>
+    </div>
   </div>
 
-  <div id="filter-bar" style="background:var(--surface);border-bottom:1px solid var(--border);padding:6px 20px;display:flex;align-items:center;gap:6px;flex-shrink:0">
-    <span style="font-size:10px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;white-space:nowrap;margin-right:4px">Filter</span>
-    <button class="seg-btn" id="flt-all"      onclick="setFilter('all')">All</button>
-    <button class="seg-btn" id="flt-amcs"     onclick="setFilter('amcs')">AMCS</button>
-    <button class="seg-btn" id="flt-detox"    onclick="setFilter('detox')">Detox</button>
+  <div class="coverage-header" id="coverage-header"></div>
+
+  <div class="filter-bar">
+    <span style="font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-right:4px">Filter</span>
+    <button class="seg-btn" id="flt-all"       onclick="setFilter('all')">All</button>
+    <button class="seg-btn" id="flt-amcs"      onclick="setFilter('amcs')">AMCS</button>
+    <button class="seg-btn" id="flt-detox"     onclick="setFilter('detox')">Detox</button>
     <button class="seg-btn" id="flt-perinatal" onclick="setFilter('perinatal')">Perinatal</button>
   </div>
 
   <div class="body-row">
-    <!-- Sidebar -->
-    <div class="sidebar" id="sidebar"></div>
-
-    <!-- Card grid -->
-    <div class="main">
-      <div class="grid" id="grid"></div>
-    </div>
+    <div class="main"><div class="grid" id="grid"></div></div>
   </div>
 </div>
 
-<!-- Overlay + Panel -->
 <div class="overlay" id="overlay" onclick="closePanel()"></div>
 <div class="panel" id="panel">
   <div class="panel-header">
-    <span class="panel-title" id="panel-title">Member settings</span>
+    <span class="panel-title" id="panel-title"></span>
     <button class="panel-close" onclick="closePanel()">✕</button>
   </div>
   <div class="panel-body" id="panel-body"></div>
+  <div class="panel-footer">
+    <button class="done-btn" onclick="closePanel()">Done</button>
+  </div>
 </div>
 
 <script>
 // ── Palette ──────────────────────────────────────────────────────────────
 const C = {
-  amcs:'#3b82f6', dcore:'#ef4444', dsupp:'#f97316',
-  peri:'#a78bfa', newm:'#34d399',
-  faint:'#1a3554', dim:'#5a82a6', gold:'#fbbf24',
+  amcs:'#3b82f6', detox:'#ef4444',
+  peri:'#a78bfa', newm:'#34d399', faint:'#1a3554', dim:'#5a82a6',
 };
 
-// ── Initial roster ────────────────────────────────────────────────────────
-let members = [
-  { id:'RH',  label:'RH',  real:true,  onLeave:false, senior:true,
-    amcs:true,  detoxCore:true,  detoxSupp:false, peri:false,
-    site:'both',   noRJHFirst:false,
-    wkCap:18, weCap:10, notes:'Never Saturdays · Detox call covers call obligation · Desired: 14 wks · 0 call days · never Sundays' },
-  { id:'KW',  label:'KW',  real:true,  onLeave:false, senior:true,
-    amcs:true,  detoxCore:false, detoxSupp:false, peri:false,
-    site:'rjh',    noRJHFirst:false,
-    wkCap:10, weCap:6,  notes:'RJH only · Desired: 6–8 wks · 0 call days' },
-  { id:'DM',  label:'DM',  real:true,  onLeave:false, senior:true,
-    amcs:true,  detoxCore:false, detoxSupp:false, peri:false,
-    site:'vgh',    noRJHFirst:true,
-    wkCap:9,  weCap:12, notes:'VGH only · retiring · Desired: 9 wks · 9 call days' },
-  { id:'TJ',  label:'TJ',  real:true,  onLeave:false, senior:true,
-    amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
-    site:'rjh',    noRJHFirst:false,
-    wkCap:20, weCap:20, notes:'RJH only · Desired: 18 wks · 16 call days' },
-  { id:'AJ',  label:'AJ',  real:true,  onLeave:false, senior:true,
-    amcs:true,  detoxCore:true,  detoxSupp:false, peri:false,
-    site:'vgh',    noRJHFirst:true,
-    wkCap:6,  weCap:12, notes:'VGH only · Detox Core (6 wks fixed) · Desired: 6 wks · 12 call days' },
-  { id:'DR',  label:'DR',  real:true,  onLeave:false, senior:false,
-    amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
-    site:'both',   noRJHFirst:false,
-    wkCap:19, weCap:24, notes:'Desired: 13 wks · 0 call days' },
-  { id:'KR',  label:'KR',  real:true,  onLeave:false, senior:true,
-    amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
-    site:'both',   noRJHFirst:false,
-    wkCap:10, weCap:12, notes:'AMCS + Detox Support · Desired: 10 wks · 10 call days' },
-  { id:'MTB', label:'MTB', real:true,  onLeave:false, senior:false,
-    amcs:true,  detoxCore:false, detoxSupp:true,  peri:true,
-    site:'both',   noRJHFirst:false,
-    wkCap:23, weCap:12, notes:'Triple service · 12d AMCS/Detox call cap · Desired: 23 wks total (incl peri) · 0 call days' },
-  { id:'AR',  label:'AR',  real:true,  onLeave:false, senior:true,
-    amcs:true,  detoxCore:false, detoxSupp:true,  peri:true,
-    site:'both',   noRJHFirst:false,
-    wkCap:24, weCap:6,  notes:'Triple service · 6d AMCS/Detox call cap · Desired: 8 wks AMCS (excl peri) · 0 call days' },
-  { id:'CH',  label:'CH',  real:true,  onLeave:false, senior:false,
-    amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
-    site:'both',   noRJHFirst:false,
-    wkCap:13, weCap:26, notes:'Desired: 12 wks · as few call days as possible' },
-  { id:'NS',  label:'NS',  real:true,  onLeave:false, senior:true,
-    amcs:true,  detoxCore:false, detoxSupp:false, peri:false,
-    site:'rjh',    noRJHFirst:false,
-    wkCap:2,  weCap:8,  notes:'RJH only' },
-  { id:'AP',  label:'AP',  real:true,  onLeave:false, senior:true,
-    amcs:true,  detoxCore:false, detoxSupp:true,  peri:false,
-    site:'both',   noRJHFirst:false,
-    wkCap:12, weCap:24, notes:'' },
-  { id:'AW',  label:'AW',  real:true,  onLeave:false, senior:false,
-    amcs:false, detoxCore:false, detoxSupp:false, peri:true,
-    site:'hwh',    noRJHFirst:false,
-    wkCap:13, weCap:0,  notes:'HerWayHome · Perinatal call included · As required for Perinatal' },
-  { id:'GW',  label:'GW',  real:true,  onLeave:false, senior:false,
-    amcs:false, detoxCore:false, detoxSupp:false, peri:true,
-    site:'hwh',    noRJHFirst:false,
-    wkCap:0,  weCap:0,  notes:'HerWayHome · Perinatal group member · no weeks or call' },
-  { id:'KM',  label:'KM',  real:true,  onLeave:false, senior:false,
-    amcs:false, detoxCore:false, detoxSupp:false, peri:true,
-    site:'hwh',    noRJHFirst:false,
-    wkCap:13, weCap:0,  notes:'HerWayHome · Perinatal only · As required for Perinatal' },
-  { id:'SL',  label:'SL',  real:true,  onLeave:true,  senior:false,
-    amcs:true,  detoxCore:false, detoxSupp:false, peri:true,
-    site:'both',   noRJHFirst:false,
-    wkCap:0,  weCap:0,  notes:'Indefinite leave' },
-  { id:'MW',  label:'MW',  real:true,  onLeave:true,  senior:false,
-    amcs:true,  detoxCore:false, detoxSupp:false, peri:true,
-    site:'both',   noRJHFirst:false,
-    wkCap:0,  weCap:0,  notes:'On leave' },
-  { id:'AN',  label:'AN',  real:true,  onLeave:true,  senior:false,
-    amcs:true,  detoxCore:false, detoxSupp:false, peri:false,
-    site:'both',   noRJHFirst:false,
-    wkCap:0,  weCap:0,  notes:'On leave' },
+// ── Default settings ──────────────────────────────────────────────────────
+// Sep–Dec 2026: ~17 working weeks, ~38 weekend+STAT days
+// Jan–Jun 2027: ~26 working weeks, ~56 weekend+STAT days
+const DEFAULT_SETTINGS = {
+  sepDecAmcsBase:    34,   // 17 wks × 2 sites
+  sepDecAmcsSecond:  17,
+  sepDecDetox:       17,
+  sepDecPeri:        13,
+  sepDecCallPool:    38,
+  janJunAmcsBase:    52,   // 26 wks × 2 sites
+  janJunAmcsSecond:  26,
+  janJunDetox:       26,
+  janJunPeri:        20,
+  janJunCallPool:    56,
+};
+
+// ── Default roster (v4 schema — per-period caps, updated from form responses) ──
+// wkCapSepDec / weCapSepDec : Sep–Dec 2026 (includes already-scheduled shifts)
+// wkCapJanJun / weCapJanJun : Jan–Jun 2027 (not yet scheduled)
+// MTB and AR share a family practice and cannot be scheduled simultaneously.
+const DEFAULT_MEMBERS = [
+  { id:'RH',  label:'Hering',   real:true,  onLeave:false,
+    amcsFirst:true,  amcsSecond:true,  amcsVGH:true,  detox:true,  peri:false,
+    wkCapSepDec:4,  weCapSepDec:3,  wkCapJanJun:6,  weCapJanJun:4,
+    notes:"Works in a variety of settings including RAAC and the Pandora Clinic, in addition to leadership responsibilities. Can't do Saturdays (only Sundays for call days)….can do Christmas Day and Easter Monday." },
+  { id:'KW',  label:'Winter',   real:true,  onLeave:false,
+    amcsFirst:true,  amcsSecond:true,  amcsVGH:false, detox:false, peri:false,
+    wkCapSepDec:2,  weCapSepDec:2,  wkCapJanJun:4,  weCapJanJun:4,
+    notes:'Concurrent responsibilities with a full FTE job with the hospitalist group and thus, little desire to work more weekends and consecutive weeks.' },
+  { id:'DM',  label:'McGhee',   real:true,  onLeave:false,
+    amcsFirst:false, amcsSecond:true,  amcsVGH:true,  detox:false, peri:false,
+    wkCapSepDec:4,  weCapSepDec:6,  wkCapJanJun:6,  weCapJanJun:10,
+    notes:'Concurrent responsibilities for the Physician Health Program. Wants to do his share of weekends and STATs, and prefers less than maximum total days anywhere.' },
+  { id:'TJ',  label:'Jankowsk', real:true,  onLeave:false,
+    amcsFirst:true,  amcsSecond:true,  amcsVGH:false, detox:true,  peri:false,
+    wkCapSepDec:7,  weCapSepDec:6,  wkCapJanJun:10, weCapJanJun:10,
+    notes:'Contributes to IM call responsibilities as well. Would prefer not to work consecutive weeks. 7-day maximum stretch. 5 day stretch preferred over longer stretch.' },
+  { id:'AJ',  label:'Joshi',    real:true,  onLeave:true,
+    amcsFirst:false, amcsSecond:false, amcsVGH:false, detox:false, peri:false,
+    wkCapSepDec:0,  weCapSepDec:0,  wkCapJanJun:0,  weCapJanJun:0,
+    notes:'Unsure how much work I want to do and unclear how much of that will be inpatient/outpatient. Accordingly, for projections, best to assume I am not working for the next year.' },
+  { id:'DR',  label:'Reading',  real:true,  onLeave:false,
+    amcsFirst:true,  amcsSecond:true,  amcsVGH:true,  detox:false, peri:false,
+    wkCapSepDec:6,  weCapSepDec:8,  wkCapJanJun:8,  weCapJanJun:16,
+    notes:'Works in a variety of settings including GIM and Foundry. Will be taking parental leave October–November 2026 and returning to work at reduced hours until November 2027.' },
+  { id:'KR',  label:'Roden',    real:true,  onLeave:false,
+    amcsFirst:true,  amcsSecond:true,  amcsVGH:true,  detox:true,  peri:false,
+    wkCapSepDec:4,  weCapSepDec:7,  wkCapJanJun:6,  weCapJanJun:10,
+    notes:'Has responsibilities for a longitudinal family practice and works at SAFER. Wherever possible needs minimum 2 weeks (ideally 3) between weeks on service. Cannot work Feb 13/14/15 or March 13/14.' },
+  { id:'MTB', label:'Tubman-B', real:true,  onLeave:false,
+    amcsFirst:true,  amcsSecond:true,  amcsVGH:true,  detox:true,  peri:true,
+    wkCapSepDec:8,  weCapSepDec:4,  wkCapJanJun:12, weCapJanJun:6,
+    notes:'Works in a variety of settings including SAFER. MTB and AR share a family practice and cannot work at the same time.' },
+  { id:'AR',  label:'Ratzlaff', real:true,  onLeave:false,
+    amcsFirst:true,  amcsSecond:true,  amcsVGH:true,  detox:false, peri:true,
+    wkCapSepDec:6,  weCapSepDec:4,  wkCapJanJun:5,  weCapJanJun:4,
+    notes:'Difficult covering both Saturday and Sunday together in a weekend for call (would rather have weekend shifts split). MTB and AR share a family practice and cannot work at the same time.' },
+  { id:'CH',  label:'Howell',   real:true,  onLeave:false,
+    amcsFirst:true,  amcsSecond:true,  amcsVGH:true,  detox:false, peri:false,
+    wkCapSepDec:4,  weCapSepDec:6,  wkCapJanJun:6,  weCapJanJun:10,
+    notes:'Works in a variety of settings including UPCC and SAFER. Unavailable Sep 3–17, Sep 27–Oct 14, Dec 24–28. Unavailable June 15–23.' },
+  { id:'NS',  label:'Stefani',  real:true,  onLeave:false,
+    amcsFirst:true,  amcsSecond:true,  amcsVGH:true,  detox:false, peri:false,
+    wkCapSepDec:1,  weCapSepDec:3,  wkCapJanJun:2,  weCapJanJun:4,
+    notes:'Concurrent responsibilities for the Emergency Medicine group. Unavailable in February and last week of January, ideally not over New Years or Easter. Ideally not Sundays.' },
+  { id:'AP',  label:'Pawluk',   real:true,  onLeave:false,
+    amcsFirst:true,  amcsSecond:true,  amcsVGH:true,  detox:false, peri:false,
+    wkCapSepDec:3,  weCapSepDec:3,  wkCapJanJun:6,  weCapJanJun:6,
+    notes:'Concurrent responsibilities in Long-Term Care, Emergency, and Geriatric Addiction Medicine at SOPC. Away mid-Jan to end of Feb. One week off in April (TBC). Max 2 consecutive weeks. Prefers VGH, then RJH 2nd doc. May pick up occasional extra days.' },
+  { id:'AW',  label:'Whitten',  real:true,  onLeave:false,
+    amcsFirst:false, amcsSecond:false, amcsVGH:false, detox:false, peri:true,
+    wkCapSepDec:4,  weCapSepDec:0,  wkCapJanJun:7,  weCapJanJun:0,
+    notes:'Has a longitudinal family practice. HerWayHome — Perinatal call included. As required for Perinatal.' },
+  { id:'GW',  label:'Wiwcharu', real:true,  onLeave:true,
+    amcsFirst:false, amcsSecond:false, amcsVGH:false, detox:false, peri:true,
+    wkCapSepDec:0,  weCapSepDec:0,  wkCapJanJun:0,  weCapJanJun:0,
+    notes:'Not on leave, but marked as "on leave" given that GW has a specific role with HerWay and does not take call for the group. HerWayHome — Perinatal group member, no weeks or call.' },
+  { id:'KM',  label:'Mehaffey', real:true,  onLeave:false,
+    amcsFirst:false, amcsSecond:false, amcsVGH:false, detox:false, peri:true,
+    wkCapSepDec:4,  weCapSepDec:0,  wkCapJanJun:7,  weCapJanJun:0,
+    notes:'Concurrent responsibilities at Cool-Aid, RAAC, Muncey Place, and in leadership. HerWayHome — Perinatal only. As required for Perinatal.' },
+  { id:'SL',  label:'Lea',      real:true,  onLeave:true,
+    amcsFirst:false, amcsSecond:true,  amcsVGH:false, detox:false, peri:true,
+    wkCapSepDec:0,  weCapSepDec:2,  wkCapJanJun:5,  weCapJanJun:4,
+    notes:'Not certain of return to work plan (date, amount) — may change.' },
+  { id:'MW',  label:'Woolner',  real:true,  onLeave:true,
+    amcsFirst:true,  amcsSecond:false, amcsVGH:true,  detox:false, peri:true,
+    wkCapSepDec:0,  weCapSepDec:0,  wkCapJanJun:0,  weCapJanJun:0,
+    notes:'On leave' },
+  { id:'AN',  label:'Nguyen',   real:true,  onLeave:true,
+    amcsFirst:true,  amcsSecond:false, amcsVGH:true,  detox:false, peri:false,
+    wkCapSepDec:0,  weCapSepDec:0,  wkCapJanJun:0,  weCapJanJun:0,
+    notes:'On leave' },
+  { id:'RadM', label:'RadM',    real:true,  onLeave:false,
+    amcsFirst:false, amcsSecond:false, amcsVGH:false, detox:true,  peri:false,
+    wkCapSepDec:2,  weCapSepDec:4,  wkCapJanJun:0,  weCapJanJun:0,
+    notes:'Detox only · Sep–Dec 2026 availability only' },
+  { id:'RanM', label:'RanM',    real:true,  onLeave:false,
+    amcsFirst:false, amcsSecond:false, amcsVGH:false, detox:true,  peri:false,
+    wkCapSepDec:3,  weCapSepDec:6,  wkCapJanJun:0,  weCapJanJun:0,
+    notes:'Detox only · Sep–Dec 2026 availability only' },
+  { id:'MeeG', label:'MeeG',    real:true,  onLeave:false,
+    amcsFirst:false, amcsSecond:false, amcsVGH:false, detox:true,  peri:false,
+    wkCapSepDec:2,  weCapSepDec:3,  wkCapJanJun:0,  weCapJanJun:0,
+    notes:'Detox only · Sep–Dec 2026 availability only' },
+  { id:'PauB', label:'PauB',    real:true,  onLeave:false,
+    amcsFirst:false, amcsSecond:false, amcsVGH:false, detox:true,  peri:false,
+    wkCapSepDec:4,  weCapSepDec:9,  wkCapJanJun:0,  weCapJanJun:0,
+    notes:'Detox only · Sep–Dec 2026 availability only' },
 ];
 
-// ── Global state ─────────────────────────────────────────────────────────
-let secondDoc  = false;
+// ── State ─────────────────────────────────────────────────────────────────
+let members          = DEFAULT_MEMBERS.map(m => ({ ...m }));
+let settings         = { ...DEFAULT_SETTINGS };
+let secondDoc        = true;
+let activePeriod     = 'sepDec'; // 'sepDec' | 'janJun'
+let detoxFirst       = false;
 let placeholderCount = 0;
-let editingId  = null;
-let activeFilter = 'all';
-// 'all' | 'amcs' | 'detox' | 'perinatal'
+let editingId        = null;
+let panelMode        = 'member';
+let activeFilter     = 'all';
+
+// ── Effective cap helpers (period-aware) ──────────────────────────────────
+function effWk(m) {
+  return activePeriod === 'sepDec' ? (m.wkCapSepDec || 0) : (m.wkCapJanJun || 0);
+}
+function effWe(m) {
+  return activePeriod === 'sepDec' ? (m.weCapSepDec || 0) : (m.weCapJanJun || 0);
+}
+
+// ── Persistence ───────────────────────────────────────────────────────────
+const STORAGE_KEY = 'amcs-scheduler-v4';
+
+function migrateMembers(rawMembers) {
+  return rawMembers.map(m => {
+    const n = { ...m };
+    // v2 → v3: service role fields
+    if (!('amcsFirst' in n)) {
+      const isRJH  = m.site === 'rjh' || m.site === 'both';
+      const isVGH  = m.site === 'vgh' || m.site === 'both';
+      const isAMCS = !!(m.amcs || m.detoxCore || m.detoxSupp);
+      n.amcsFirst  = isRJH && !m.noRJHFirst && isAMCS;
+      n.amcsSecond = false;
+      n.amcsVGH    = isVGH && isAMCS;
+      n.detox      = !!(m.detoxCore || m.detoxSupp);
+      delete n.amcs; delete n.detoxCore; delete n.coreWks;
+      delete n.detoxSupp; delete n.site; delete n.noRJHFirst;
+    }
+    // v3 → v4: wkCap/weCap → per-period caps
+    if (!('wkCapSepDec' in n)) {
+      const wk = n.wkCap || 0, we = n.weCap || 0;
+      n.wkCapSepDec = Math.round(wk * 17 / 52);
+      n.weCapSepDec = Math.round(we * 17 / 52);
+      n.wkCapJanJun = Math.round(wk * 26 / 52);
+      n.weCapJanJun = Math.round(we * 26 / 52);
+    }
+    // Remove obsolete fields
+    delete n.wkCap; delete n.weCap;
+    delete n.modifiedDuties; delete n.normalPct;
+    delete n.senior;
+    return n;
+  });
+}
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(
+      { members, settings, secondDoc, activePeriod, detoxFirst, version: 4 }
+    ));
+    const ind = document.getElementById('save-indicator');
+    if (ind) {
+      ind.classList.add('show');
+      clearTimeout(ind._t);
+      ind._t = setTimeout(() => ind.classList.remove('show'), 1500);
+    }
+  } catch(e) { console.warn('Save failed', e); }
+}
+
+function loadState() {
+  try {
+    let raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) raw = localStorage.getItem('amcs-scheduler-v2');
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (Array.isArray(data.members) && data.members.length > 0) {
+      members = migrateMembers(data.members);
+      if ((data.version || 2) < 3) {
+        members = members.map(m => {
+          if (m.id === 'AJ') {
+            return { ...m, onLeave: true,
+              amcsFirst: false, amcsSecond: false, amcsVGH: false,
+              detox: false, peri: false, notes: 'Leaving group in 2027' };
+          }
+          return m;
+        });
+      }
+    }
+    if (data.settings) settings = { ...DEFAULT_SETTINGS, ...data.settings };
+    if (typeof data.secondDoc   === 'boolean') secondDoc   = data.secondDoc;
+    if (typeof data.detoxFirst  === 'boolean') detoxFirst  = data.detoxFirst;
+    if (data.activePeriod === 'sepDec' || data.activePeriod === 'janJun') activePeriod = data.activePeriod;
+  } catch(e) { console.warn('Could not load saved state', e); }
+}
+
+function exportJSON() {
+  const blob = new Blob(
+    [JSON.stringify({ members, settings, secondDoc, activePeriod, detoxFirst, version: 4 }, null, 2)],
+    { type: 'application/json' }
+  );
+  const url = URL.createObjectURL(blob);
+  const a   = document.createElement('a');
+  a.href = url; a.download = 'amcs-schedule-2026-27.json';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+
+function importJSON() {
+  const input = document.createElement('input');
+  input.type = 'file'; input.accept = '.json,application/json';
+  input.onchange = e => {
+    const file = e.target.files[0]; if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if (Array.isArray(data.members) && data.members.length > 0)
+          members = migrateMembers(data.members);
+        if (data.settings) settings = { ...DEFAULT_SETTINGS, ...data.settings };
+        if (typeof data.secondDoc  === 'boolean') secondDoc  = data.secondDoc;
+        if (typeof data.detoxFirst === 'boolean') detoxFirst = data.detoxFirst;
+        if (data.activePeriod === 'sepDec' || data.activePeriod === 'janJun') activePeriod = data.activePeriod;
+        saveState(); closePanel(); render();
+      } catch(err) { alert('Could not load file — invalid JSON'); }
+    };
+    reader.readAsText(file);
+  };
+  input.click();
+}
+
+function resetToDefaults() {
+  if (!confirm('Reset all data to defaults? This cannot be undone.')) return;
+  members = DEFAULT_MEMBERS.map(m => ({ ...m }));
+  settings = { ...DEFAULT_SETTINGS };
+  secondDoc = true; activePeriod = 'sepDec'; detoxFirst = false; placeholderCount = 0;
+  saveState(); closePanel(); render();
+}
+
+// ── Filter ────────────────────────────────────────────────────────────────
 function setFilter(f) {
   activeFilter = f;
-  ['all','amcs','detox','perinatal'].forEach(k => {
-    const btn = document.getElementById('flt-' + k);
-    if (btn) btn.classList.toggle('active', k === f);
-  });
   render();
 }
 
-// ── Core calculation engine ───────────────────────────────────────────────
+// ── fillEqually ───────────────────────────────────────────────────────────
+function fillEqually(pool, memberCaps) {
+  const assigned = {};
+  memberCaps.forEach(({ id }) => { assigned[id] = 0; });
+  let remaining = pool;
+  let eligible  = memberCaps.filter(({ cap }) => cap > 0);
+  while (remaining > 0 && eligible.length > 0) {
+    const share = remaining / eligible.length;
+    let anyFilled = false;
+    const nextEligible = [];
+    for (const item of eligible) {
+      const headroom = item.cap - assigned[item.id];
+      if (headroom <= 0) continue;
+      if (headroom <= share) {
+        assigned[item.id] = item.cap;
+        remaining -= headroom;
+        anyFilled = true;
+      } else {
+        nextEligible.push(item);
+      }
+    }
+    eligible = nextEligible;
+    if (!anyFilled && eligible.length > 0) {
+      const floorShare = Math.floor(remaining / eligible.length);
+      const leftover   = remaining - floorShare * eligible.length;
+      eligible.forEach(({ id }) => { assigned[id] += floorShare; });
+      const sorted = [...eligible].sort(
+        (a, b) => (b.cap - assigned[b.id]) - (a.cap - assigned[a.id])
+      );
+      for (let i = 0; i < leftover; i++) assigned[sorted[i % sorted.length].id]++;
+      remaining = 0;
+    }
+  }
+  return assigned;
+}
+
+// ── Compute ───────────────────────────────────────────────────────────────
 function compute() {
-  const AMCS_DEMAND  = secondDoc ? 156 : 104;
-  const DETOX_DEMAND = 52;
-  const PERI_DEMAND  = 52;
-  const CALL_POOL    = 116;
+  // Period-specific demands
+  const ps = activePeriod === 'sepDec' ? {
+    amcsBase: settings.sepDecAmcsBase, amcsSecond: settings.sepDecAmcsSecond,
+    detox: settings.sepDecDetox, peri: settings.sepDecPeri, callPool: settings.sepDecCallPool,
+  } : {
+    amcsBase: settings.janJunAmcsBase, amcsSecond: settings.janJunAmcsSecond,
+    detox: settings.janJunDetox, peri: settings.janJunPeri, callPool: settings.janJunCallPool,
+  };
+  const RJH1_DEMAND  = Math.round(ps.amcsBase / 2);
+  const VGH_DEMAND   = ps.amcsBase - RJH1_DEMAND;
+  const RJH2_DEMAND  = ps.amcsSecond;
+  const AMCS_DEMAND  = RJH1_DEMAND + VGH_DEMAND + (secondDoc ? RJH2_DEMAND : 0);
+  const DETOX_DEMAND = ps.detox;
+  const PERI_DEMAND  = ps.peri;
+  const CALL_POOL    = ps.callPool;
 
   const active = members.filter(m => !m.onLeave);
 
-  // ── Perinatal weeks ─────────────────────────────────────────────────
-  // Fixed 13 wks each for peri members with wkCap > 0.
-  const periScheduled = active.filter(m => m.peri && m.wkCap > 0);
+  // Peri fills first (contracted obligation) — distributed equally from members' period cap
+  const periMembers = active.filter(m => m.peri && effWk(m) > 0);
+  const totalPeriCap = periMembers.reduce((s, m) => s + effWk(m), 0);
+  const periToFill = Math.min(totalPeriCap, PERI_DEMAND);
+  const periAssigned = periMembers.length > 0 && periToFill > 0
+    ? fillEqually(periToFill, periMembers.map(m => ({ id: m.id, cap: effWk(m) }))) : {};
   const periWks = {};
-  periScheduled.forEach(m => { periWks[m.id] = 13; });
+  active.forEach(m => { periWks[m.id] = periAssigned[m.id] || 0; });
 
-  // ── Detox Core pre-assignment ─────────────────────────────────────────
-  // RH = 13 wks, AJ = 6 wks — fixed, subject to their wkCap.
-  const coreMembers = active.filter(m => m.detoxCore);
-  const suppMembers = active.filter(m => m.detoxSupp);
-  const detoxWks = {};
-  coreMembers.forEach(m => {
-    const fixed = m.id === 'AJ' ? 6 : m.id === 'RH' ? 13 : 0;
-    detoxWks[m.id] = Math.min(fixed, m.wkCap);
-  });
-  const coreDetoxTotal = Object.values(detoxWks).reduce((s, v) => s + v, 0);
-
-  // ── Helper: fill a pool equally up to individual caps, iteratively ────
-  // members: array of {id, cap} objects. Returns {id → assigned}.
-  function fillEqually(pool, memberCaps) {
-    const assigned = {};
-    memberCaps.forEach(({ id }) => { assigned[id] = 0; });
-    let remaining = pool;
-    let eligible = memberCaps.filter(({ cap }) => cap > 0);
-    while (remaining > 0 && eligible.length > 0) {
-      const share = remaining / eligible.length;
-      let anyFilled = false;
-      eligible = eligible.filter(({ id, cap }) => {
-        const current = assigned[id];
-        const headroom = cap - current;
-        if (headroom <= 0) return false;
-        if (headroom <= share) {
-          // This member hits their cap this round
-          assigned[id] = cap;
-          remaining -= headroom;
-          anyFilled = true;
-          return false; // remove from eligible
-        }
-        return true;
-      });
-      if (!anyFilled && eligible.length > 0) {
-        // Distribute remaining equally (fractional — round to whole weeks fairly)
-        // Give floor to all, then distribute remainder one at a time
-        const floorShare = Math.floor(remaining / eligible.length);
-        let leftover = remaining - floorShare * eligible.length;
-        eligible.forEach(({ id }) => { assigned[id] += floorShare; });
-        // Give leftover 1-at-a-time to those with most headroom (arbitrary tiebreak)
-        const sorted = [...eligible].sort((a, b) => (b.cap - assigned[b.id]) - (a.cap - assigned[a.id]));
-        for (let i = 0; i < leftover; i++) assigned[sorted[i % sorted.length].id]++;
-        remaining = 0;
-      }
-    }
-    return assigned;
-  }
-
-  // ── AMCS + Detox Support week allocation ─────────────────────────────
-  // Everyone works to their full cap (minus peri and core deductions).
-  // Total pool = sum of all available caps across AMCS-eligible members (excl AJ).
-  // Detox support gets an equal share of min(pool - AMCS_demand, detox_deficit).
-  // Each support member's AMCS weeks = their available cap minus their detox weeks.
-  // Non-support AMCS members contribute their full available cap to AMCS.
-
-  const amcsMembers = active.filter(m => m.amcs);
-  const detoxDeficit = Math.max(0, DETOX_DEMAND - coreDetoxTotal);
-
-  // Available cap per member after peri and fixed detox core deductions
+  // Available cap after peri
   const availCap = {};
-  amcsMembers.forEach(m => {
-    const periUsed      = periWks[m.id] || 0;
-    const detoxCoreUsed = m.detoxCore ? (detoxWks[m.id] || 0) : 0;
-    availCap[m.id] = Math.max(0, m.wkCap - periUsed - detoxCoreUsed);
+  active.forEach(m => {
+    availCap[m.id] = Math.max(0, effWk(m) - (periWks[m.id] || 0));
   });
 
-  // Total pool excluding AJ (fully consumed by detox core)
-  const poolMembers = amcsMembers.filter(m => m.id !== 'AJ');
-  const totalPool = poolMembers.reduce((s, m) => s + availCap[m.id], 0);
+  const rjh1Members  = active.filter(m => m.amcsFirst);
+  const rjh2Members  = active.filter(m => m.amcsSecond);
+  const vghMembers   = active.filter(m => m.amcsVGH);
+  const detoxMembers = active.filter(m => m.detox);
+  const amcsMembers  = active.filter(m => m.amcsFirst || m.amcsSecond || m.amcsVGH);
 
-  // Detox support allocation: equal share of leftover after AMCS demand is met
-  const leftover = Math.max(0, totalPool - AMCS_DEMAND);
-  const detoxToFill = Math.min(leftover, detoxDeficit);
-  const baseDetoxShare = suppMembers.length > 0 ? Math.floor(detoxToFill / suppMembers.length) : 0;
-  const detoxRemainder = detoxToFill - baseDetoxShare * suppMembers.length;
-
-  // Give remainder weeks to members with largest available cap
-  const suppSorted = [...suppMembers].sort((a, b) => availCap[b.id] - availCap[a.id]);
-  suppMembers.forEach(m => {
-    detoxWks[m.id] = (detoxWks[m.id] || 0) + baseDetoxShare;
-  });
-  for (let i = 0; i < detoxRemainder; i++) {
-    detoxWks[suppSorted[i].id]++;
-  }
-
-  // AMCS weeks: full available cap minus detox *support* weeks only
-  // (availCap already had core detox deducted, so only subtract suppDetox)
-  const amcsWks = {};
-  amcsMembers.forEach(m => {
-    const suppDetox = m.detoxSupp ? (detoxWks[m.id] || 0) : 0;
-    amcsWks[m.id] = Math.max(0, availCap[m.id] - suppDetox);
-  });
-
-  // ── CALL: combined AMCS + Detox pool ─────────────────────────────────
-  // Everyone contributes their full weCap to the combined pool.
-  // AMCS call filled first (116 days, equal shares up to cap, iteratively).
-  // Leftover call capacity split equally among Detox Support members as Detox call.
-  // Peri call: separate 116-day pool, equal split, never capped.
-
+  let rjh1Assigned = {}, vghAssigned = {}, rjh2Assigned = {}, detoxAssigned = {};
   const callAmcs = {}, callDetox = {}, callPeri = {};
 
-  // Detox Core members (RH, AJ) do Detox call only — excluded from AMCS call pool.
-  // Fill AMCS call (116 days) equally among non-core AMCS members up to their weCap.
-  const amcsCallEligible = amcsMembers.filter(m => !m.detoxCore);
-  const amcsCallAssigned = fillEqually(CALL_POOL, amcsCallEligible.map(m => ({ id: m.id, cap: m.weCap })));
-  amcsMembers.forEach(m => { callAmcs[m.id] = amcsCallAssigned[m.id] || 0; });
+  if (!detoxFirst) {
+    // ── AMCS-first: RJH 1st → VGH → RJH 2nd → Detox ────────────────────
 
-  // Detox call: all Detox members (core + support), capped at their individual headroom.
-  // Core members have full weCap available; support members have weCap minus AMCS call.
-  const detoxCallMembers = active.filter(m => m.detoxCore || m.detoxSupp);
-  if (detoxCallMembers.length > 0) {
-    const headroom = {};
-    detoxCallMembers.forEach(m => {
-      headroom[m.id] = Math.max(0, m.weCap - (callAmcs[m.id] || 0));
-    });
-    const totalCallLeftover = detoxCallMembers.reduce((s, m) => s + headroom[m.id], 0);
-    const detoxCallToFill = Math.min(totalCallLeftover, CALL_POOL);
-    const detoxCallAssigned = fillEqually(detoxCallToFill,
-      detoxCallMembers.map(m => ({ id: m.id, cap: headroom[m.id] })));
-    detoxCallMembers.forEach(m => { callDetox[m.id] = detoxCallAssigned[m.id] || 0; });
-  }
+    rjh1Assigned = rjh1Members.length > 0
+      ? fillEqually(RJH1_DEMAND, rjh1Members.map(m => ({ id: m.id, cap: availCap[m.id] }))) : {};
+    const capAfterRJH1 = {};
+    active.forEach(m => { capAfterRJH1[m.id] = Math.max(0, availCap[m.id] - (rjh1Assigned[m.id] || 0)); });
 
-  // Peri call: equal split among scheduled peri members, uncapped
-  const periCallCount = periScheduled.length;
-  if (periCallCount > 0) {
-    const baseShare = Math.floor(CALL_POOL / periCallCount);
-    let leftover = CALL_POOL - baseShare * periCallCount;
-    periScheduled.forEach(m => { callPeri[m.id] = baseShare; });
-    // distribute leftover 1-at-a-time
-    for (let i = 0; i < leftover; i++) {
-      callPeri[periScheduled[i % periCallCount].id]++;
+    vghAssigned = vghMembers.length > 0
+      ? fillEqually(VGH_DEMAND, vghMembers.map(m => ({ id: m.id, cap: capAfterRJH1[m.id] }))) : {};
+    const capAfterVGH = {};
+    active.forEach(m => { capAfterVGH[m.id] = Math.max(0, capAfterRJH1[m.id] - (vghAssigned[m.id] || 0)); });
+
+    if (secondDoc && rjh2Members.length > 0) {
+      rjh2Assigned = fillEqually(RJH2_DEMAND, rjh2Members.map(m => ({ id: m.id, cap: capAfterVGH[m.id] })));
+    }
+    const capAfterRJH2 = {};
+    active.forEach(m => { capAfterRJH2[m.id] = Math.max(0, capAfterVGH[m.id] - (rjh2Assigned[m.id] || 0)); });
+
+    const totalDetoxHeadroom = detoxMembers.reduce((s, m) => s + capAfterRJH2[m.id], 0);
+    const detoxToFill = Math.min(totalDetoxHeadroom, DETOX_DEMAND);
+    if (detoxMembers.length > 0 && detoxToFill > 0)
+      detoxAssigned = fillEqually(detoxToFill, detoxMembers.map(m => ({ id: m.id, cap: capAfterRJH2[m.id] })));
+
+    // Call: AMCS first, then detox from remaining
+    if (amcsMembers.length > 0) {
+      const a = fillEqually(CALL_POOL, amcsMembers.map(m => ({ id: m.id, cap: effWe(m) })));
+      amcsMembers.forEach(m => { callAmcs[m.id] = a[m.id] || 0; });
+    }
+    if (detoxMembers.length > 0) {
+      const headroom = {};
+      detoxMembers.forEach(m => { headroom[m.id] = Math.max(0, effWe(m) - (callAmcs[m.id] || 0)); });
+      const totalDH = detoxMembers.reduce((s, m) => s + headroom[m.id], 0);
+      const fill = Math.min(totalDH, CALL_POOL);
+      if (fill > 0) {
+        const d = fillEqually(fill, detoxMembers.map(m => ({ id: m.id, cap: headroom[m.id] })));
+        detoxMembers.forEach(m => { callDetox[m.id] = d[m.id] || 0; });
+      }
+    }
+
+  } else {
+    // ── Detox-first: Detox → RJH 1st → VGH → RJH 2nd ───────────────────
+
+    const totalDetoxHeadroom = detoxMembers.reduce((s, m) => s + availCap[m.id], 0);
+    const detoxToFill = Math.min(totalDetoxHeadroom, DETOX_DEMAND);
+    if (detoxMembers.length > 0 && detoxToFill > 0)
+      detoxAssigned = fillEqually(detoxToFill, detoxMembers.map(m => ({ id: m.id, cap: availCap[m.id] })));
+
+    const capAfterDetox = {};
+    active.forEach(m => { capAfterDetox[m.id] = Math.max(0, availCap[m.id] - (detoxAssigned[m.id] || 0)); });
+
+    rjh1Assigned = rjh1Members.length > 0
+      ? fillEqually(RJH1_DEMAND, rjh1Members.map(m => ({ id: m.id, cap: capAfterDetox[m.id] }))) : {};
+    const capAfterRJH1 = {};
+    active.forEach(m => { capAfterRJH1[m.id] = Math.max(0, capAfterDetox[m.id] - (rjh1Assigned[m.id] || 0)); });
+
+    vghAssigned = vghMembers.length > 0
+      ? fillEqually(VGH_DEMAND, vghMembers.map(m => ({ id: m.id, cap: capAfterRJH1[m.id] }))) : {};
+    const capAfterVGH = {};
+    active.forEach(m => { capAfterVGH[m.id] = Math.max(0, capAfterRJH1[m.id] - (vghAssigned[m.id] || 0)); });
+
+    if (secondDoc && rjh2Members.length > 0) {
+      rjh2Assigned = fillEqually(RJH2_DEMAND, rjh2Members.map(m => ({ id: m.id, cap: capAfterVGH[m.id] })));
+    }
+
+    // Call: Detox first, then AMCS from remaining
+    if (detoxMembers.length > 0) {
+      const d = fillEqually(CALL_POOL, detoxMembers.map(m => ({ id: m.id, cap: effWe(m) })));
+      detoxMembers.forEach(m => { callDetox[m.id] = d[m.id] || 0; });
+    }
+    if (amcsMembers.length > 0) {
+      const headroom = {};
+      amcsMembers.forEach(m => { headroom[m.id] = Math.max(0, effWe(m) - (callDetox[m.id] || 0)); });
+      const totalAH = amcsMembers.reduce((s, m) => s + headroom[m.id], 0);
+      const fill = Math.min(totalAH, CALL_POOL);
+      if (fill > 0) {
+        const a = fillEqually(fill, amcsMembers.map(m => ({ id: m.id, cap: headroom[m.id] })));
+        amcsMembers.forEach(m => { callAmcs[m.id] = a[m.id] || 0; });
+      }
     }
   }
 
-  // ── Build result objects ──────────────────────────────────────────────
-  const results = {};
+  // Total AMCS weeks per member (same regardless of mode)
+  const amcsWks = {};
   active.forEach(m => {
-    const aw = amcsWks[m.id]  || 0;
-    const dw = detoxWks[m.id] || 0;
-    const pw = periWks[m.id]  || 0;
-    const totalWks  = aw + dw + pw;
-    const ca = callAmcs[m.id]  || 0;
-    const cd = callDetox[m.id] || 0;
-    const cp = callPeri[m.id]  || 0;
-    const totalCall = ca + cd + cp;
-    results[m.id] = { aw, dw, pw, totalWks, ca, cd, cp, totalCall };
+    amcsWks[m.id] = (rjh1Assigned[m.id] || 0) + (rjh2Assigned[m.id] || 0) + (vghAssigned[m.id] || 0);
   });
 
-  // ── Service totals for sidebar ────────────────────────────────────────
-  const amcsSupply  = active.reduce((s, m) => s + (amcsWks[m.id]  || 0), 0);
-  const detoxSupply = active.reduce((s, m) => s + (detoxWks[m.id] || 0), 0);
-  const periSupply  = periScheduled.reduce((s, m) => s + (periWks[m.id] || 0), 0);
+  const detoxWks = {};
+  detoxMembers.forEach(m => { detoxWks[m.id] = detoxAssigned[m.id] || 0; });
 
+  // Peri call (HerWayHome) is on-call as required — not modelled numerically.
+  // Individual cp values stay 0; coverage header shows 100% for the service.
+
+  const results = {};
+  active.forEach(m => {
+    const aw = amcsWks[m.id]   || 0;
+    const dw = detoxWks[m.id]  || 0;
+    const pw = periWks[m.id]   || 0;
+    const ca = callAmcs[m.id]  || 0;
+    const cd = callDetox[m.id] || 0;
+    results[m.id] = { aw, dw, pw, totalWks: aw+dw+pw, ca, cd, cp: 0, totalCall: ca+cd };
+  });
+
+  const rjh1Supply        = Object.values(rjh1Assigned).reduce((s, v) => s + v, 0);
+  const rjh2Supply        = Object.values(rjh2Assigned).reduce((s, v) => s + v, 0);
+  const vghSupply         = Object.values(vghAssigned).reduce((s, v) => s + v, 0);
+  const amcsSupply        = rjh1Supply + rjh2Supply + vghSupply;
+  const detoxSupply       = active.reduce((s, m) => s + (detoxWks[m.id]  || 0), 0);
+  const periSupply        = periMembers.reduce((s, m) => s + (periWks[m.id] || 0), 0);
   const amcsCallSupplied  = active.reduce((s, m) => s + (callAmcs[m.id]  || 0), 0);
   const detoxCallSupplied = active.reduce((s, m) => s + (callDetox[m.id] || 0), 0);
-  const detoxNonAjTarget  = CALL_POOL;
+
+  // MTB/AR mutual-exclusion check (they share a family practice)
+  const periodWks    = activePeriod === 'sepDec' ? 17 : 26;
+  const mtbWks       = (results['MTB'] || {}).totalWks || 0;
+  const arWks        = (results['AR']  || {}).totalWks || 0;
+  const mtbArTotal   = mtbWks + arWks;
+  const mtbArConflict = mtbArTotal > periodWks;
+  const mtbActive    = !members.find(m => m.id === 'MTB')?.onLeave;
+  const arActive     = !members.find(m => m.id === 'AR')?.onLeave;
 
   return {
     results,
-    demands:    { amcs: AMCS_DEMAND, detox: DETOX_DEMAND, peri: PERI_DEMAND, call: CALL_POOL },
-    supply:     { amcs: amcsSupply,  detox: detoxSupply,  peri: periSupply },
+    demands: {
+      amcs: AMCS_DEMAND, rjh1: RJH1_DEMAND, rjh2: RJH2_DEMAND, vgh: VGH_DEMAND,
+      detox: DETOX_DEMAND, peri: PERI_DEMAND, call: CALL_POOL,
+    },
+    supply: {
+      amcs: amcsSupply, rjh1: rjh1Supply, rjh2: rjh2Supply, vgh: vghSupply,
+      detox: detoxSupply, peri: periSupply,
+    },
     callSupply: { amcs: amcsCallSupplied, detox: detoxCallSupplied, peri: CALL_POOL },
-    detoxNonAjTarget,
+    mtbAr: { total: mtbArTotal, limit: periodWks, conflict: mtbArConflict, bothActive: mtbActive && arActive },
   };
 }
 
+// ── Coverage header ───────────────────────────────────────────────────────
+function renderCoverageHeader(calc) {
+  const { demands, supply, callSupply, mtbAr } = calc;
+  const el = document.getElementById('coverage-header');
+  if (!el) return;
 
+  function covMetric(label, sup, dem, borderTop) {
+    const pct = dem > 0 ? Math.min(100, sup / dem * 100) : 100;
+    const clr = sup >= dem ? '#22c55e' : (sup >= dem * .85 ? '#f59e0b' : '#ef4444');
+    return `
+      <div class="cov-metric"${borderTop ? ' style="margin-top:5px;padding-top:7px;border-top:1px solid var(--border)"' : ''}>
+        <div class="cov-row">
+          <span class="cov-lbl">${label}</span>
+          <span class="cov-num">${Math.round(sup)}<span class="cov-denom"> / ${dem}</span></span>
+        </div>
+        <div class="cov-bar-wrap"><div class="cov-bar-fill" style="width:${pct}%;background:${clr}"></div></div>
+      </div>`;
+  }
 
-// ── Primary colour per member ─────────────────────────────────────────────
+  function svcBlock(label, color, weekMetrics, callSup, callDem) {
+    return `
+      <div class="cov-block">
+        <div class="cov-title" style="color:${color}">${label}</div>
+        ${weekMetrics.map((m, i) => covMetric(m.label, m.sup, m.dem, false)).join('')}
+        ${covMetric('W/E + STATs', callSup, callDem, true)}
+      </div>`;
+  }
+
+  const amcsMetrics = [
+    { label: 'RJH 1st doc', sup: supply.rjh1, dem: demands.rjh1 },
+    { label: 'VGH',         sup: supply.vgh,  dem: demands.vgh  },
+    ...(secondDoc ? [{ label: 'RJH 2nd doc', sup: supply.rjh2, dem: demands.rjh2 }] : []),
+  ];
+
+  el.innerHTML = `
+    <div class="cov-blocks">
+      ${svcBlock('AMCS',      C.amcs,  amcsMetrics,                                               callSupply.amcs,  demands.call)}
+      <div class="cov-divider"></div>
+      ${svcBlock('Detox',     C.detox, [{ label: 'Weeks', sup: supply.detox, dem: demands.detox }], callSupply.detox, demands.call)}
+      <div class="cov-divider"></div>
+      ${svcBlock('Perinatal', C.peri,  [{ label: 'Weeks', sup: supply.peri,  dem: demands.peri  }], callSupply.peri,  demands.call)}
+    </div>
+    ${mtbAr.bothActive && mtbAr.conflict ? `<div style="align-self:center;margin-left:16px;font-size:11px;color:#ef4444;font-family:monospace;white-space:nowrap">⚠ MTB+AR: ${mtbAr.total}w / ${mtbAr.limit}w — overlap required</div>` : ''}`;
+}
+
+// ── Filter bar with counts ────────────────────────────────────────────────
+function renderFilterBar(calc) {
+  const active = members.filter(m => !m.onLeave);
+  const counts = {
+    all:       members.length,
+    amcs:      active.filter(m => m.amcsFirst || m.amcsSecond || m.amcsVGH).length,
+    detox:     active.filter(m => m.detox && (calc.results[m.id]?.dw || 0) > 0).length,
+    perinatal: active.filter(m => m.peri).length,
+  };
+  const labels = { all: 'All', amcs: 'AMCS', detox: 'Detox', perinatal: 'Perinatal' };
+  ['all','amcs','detox','perinatal'].forEach(k => {
+    const btn = document.getElementById('flt-' + k);
+    if (btn) {
+      btn.textContent = `${labels[k]} (${counts[k]})`;
+      btn.classList.toggle('active', k === activeFilter);
+    }
+  });
+}
+
+// ── Primary colour ────────────────────────────────────────────────────────
 function primaryColor(m) {
-  if (!m.amcs && !m.detoxCore && !m.detoxSupp && !m.peri) return C.faint;
-  if (m.peri && !m.amcs && !m.detoxCore && !m.detoxSupp) return C.peri;
-  if (m.detoxCore) return C.dcore;
+  if (!m.amcsFirst && !m.amcsSecond && !m.amcsVGH && !m.detox && !m.peri) return C.faint;
+  if (m.peri && !m.amcsFirst && !m.amcsSecond && !m.amcsVGH && !m.detox) return C.peri;
+  if (m.detox && !m.amcsFirst && !m.amcsSecond && !m.amcsVGH)            return C.detox;
   return C.amcs;
 }
 
-// ── Render cards ─────────────────────────────────────────────────────────
+// ── Role pills ────────────────────────────────────────────────────────────
+function rolePillsHTML(m) {
+  const pills = [];
+  if (m.amcsFirst)  pills.push(`<span class="role-pill" style="background:#3b82f618;color:#3b82f6;border:1px solid #3b82f640">RJH 1st</span>`);
+  if (m.amcsSecond) pills.push(`<span class="role-pill" style="background:#3b82f618;color:#60a5fa;border:1px solid #3b82f640">RJH 2nd</span>`);
+  if (m.amcsVGH)    pills.push(`<span class="role-pill" style="background:#3b82f618;color:#93c5fd;border:1px solid #3b82f640">VGH</span>`);
+  if (m.detox)      pills.push(`<span class="role-pill" style="background:#ef444418;color:#ef4444;border:1px solid #ef444440">Detox</span>`);
+  if (m.peri)       pills.push(`<span class="role-pill" style="background:#a78bfa18;color:#a78bfa;border:1px solid #a78bfa40">Perinatal</span>`);
+  return pills.join('');
+}
+
+// ── Render grid ───────────────────────────────────────────────────────────
 function renderGrid(calc) {
   const grid = document.getElementById('grid');
   grid.innerHTML = '';
 
-  const visibleMembers = members.filter(m => {
-    if (activeFilter === 'all') return true;
-    if (m.onLeave) return true; // always show leave cards
-    if (activeFilter === 'amcs')      return m.amcs;
-    if (activeFilter === 'detox')     return m.detoxCore || (m.detoxSupp && (calc.results[m.id]?.dw || 0) > 0);
+  const visible = members.filter(m => {
+    if (activeFilter === 'all')       return true;
+    if (m.onLeave)                    return true;
+    if (activeFilter === 'amcs')      return m.amcsFirst || m.amcsSecond || m.amcsVGH;
+    if (activeFilter === 'detox')     return m.detox && (calc.results[m.id]?.dw || 0) > 0;
     if (activeFilter === 'perinatal') return m.peri;
     return true;
   }).sort((a, b) => {
-    // On-leave cards always last
     if (a.onLeave !== b.onLeave) return a.onLeave ? 1 : -1;
     const ra = calc.results[a.id] || { totalWks: 0 };
     const rb = calc.results[b.id] || { totalWks: 0 };
     return rb.totalWks - ra.totalWks;
   });
 
-  visibleMembers.forEach(m => {
+  visible.forEach(m => {
     const el = document.createElement('div');
 
     if (m.onLeave) {
@@ -945,66 +1096,53 @@ function renderGrid(calc) {
       el.innerHTML = `
         <div class="card-stripe" style="background:${C.faint}"></div>
         <div class="leave-card-body">
-          <div class="leave-id">${m.label}</div>
+          <div class="leave-id">${esc(m.label)}</div>
           <div class="leave-lbl">On leave — not scheduled</div>
-          ${m.notes ? `<div style="font-size:9px;color:var(--muted);margin-top:2px">${m.notes}</div>` : ''}
+          ${m.notes ? `<div style="font-size:11px;color:var(--muted);margin-top:2px">${esc(m.notes)}</div>` : ''}
         </div>`;
       el.onclick = () => openPanel(m.id);
       grid.appendChild(el);
       return;
     }
 
-    const r = calc.results[m.id] || { aw:0, dw:0, pw:0, totalWks:0, ca:0, cd:0, cp:0, totalCall:0 };
-    const pc = primaryColor(m);
-    const freeWks = 52 - r.totalWks;
+    const r   = calc.results[m.id] || { aw:0, dw:0, pw:0, totalWks:0, ca:0, cd:0, cp:0, totalCall:0 };
+    const pc  = primaryColor(m);
+    const ew  = effWk(m);
+    const ewe = effWe(m);
 
-    // Build week colour sequence: Detox first, then AMCS, then Peri
-    const weekColors = [];
-    const detoxColor = m.detoxCore ? C.dcore : C.dsupp;
-    for (let i = 0; i < r.dw; i++) weekColors.push(detoxColor);
-    for (let i = 0; i < r.aw; i++) weekColors.push(C.amcs);
-    for (let i = 0; i < r.pw; i++) weekColors.push(C.peri);
+    const freeWks = Math.max(0, ew - r.totalWks);
+    const weekColors = [
+      ...Array(r.dw).fill(C.detox),
+      ...Array(r.aw).fill(C.amcs),
+      ...Array(r.pw).fill(C.peri),
+    ];
+    const weekBoxes = weekColors.map(c => `<div class="week-box" style="background:${c}"></div>`).join('')
+      + Array(freeWks).fill('<div class="week-box free"></div>').join('');
 
-    const weekBoxes = weekColors.map(c =>
-      `<div class="week-box" style="background:${c}" title="${c}"></div>`
-    ).join('') + Array(freeWks).fill('<div class="week-box free"></div>').join('');
-
-    // Build call dot colour sequence: Detox first, then AMCS, then Peri
-    const totalCallSlots = Math.max(r.totalCall, 0);
-    const callColors = [];
-    for (let i = 0; i < r.cd; i++) callColors.push(m.detoxCore ? C.dcore : C.dsupp);
-    for (let i = 0; i < r.ca; i++) callColors.push(C.amcs);
-    for (let i = 0; i < r.cp; i++) callColors.push(C.peri);
-
-    const callDots = callColors.map(c =>
-      `<div class="call-dot-pip" style="background:${c}"></div>`
-    ).join('');
-
-    const legItems = [];
-    if (r.dw > 0) legItems.push(`<div class="seg-leg-item"><div class="seg-dot" style="background:${detoxColor}"></div>${m.detoxCore ? 'Detox Core' : 'Detox Supp'} ${r.dw}w</div>`);
-    if (r.aw > 0) legItems.push(`<div class="seg-leg-item"><div class="seg-dot" style="background:${C.amcs}"></div>AMCS ${r.aw}w</div>`);
-    if (r.pw > 0) legItems.push(`<div class="seg-leg-item"><div class="seg-dot" style="background:${C.peri}"></div>Perinatal ${r.pw}w</div>`);
-
-    const callLegItems = [];
-    if (r.cd > 0) callLegItems.push(`<div class="seg-leg-item"><div class="seg-dot" style="background:${detoxColor};border-radius:50%"></div>Detox ${r.cd}d</div>`);
-    if (r.ca > 0) callLegItems.push(`<div class="seg-leg-item"><div class="seg-dot" style="background:${C.amcs};border-radius:50%"></div>AMCS ${r.ca}d</div>`);
-    if (r.cp > 0) callLegItems.push(`<div class="seg-leg-item"><div class="seg-dot" style="background:${C.peri};border-radius:50%"></div>Peri ${r.cp}d</div>`);
-
-    // Badges
-    const showCaps = true;
-    const badges = [
-      !m.real ? `<span class="badge" style="background:${C.newm}18;color:${C.newm};border:1px solid ${C.newm}40">NEW</span>` : '',
+    const legItems = [
+      r.dw > 0 ? `<div class="seg-leg-item"><div class="seg-dot" style="background:${C.detox}"></div>Detox ${r.dw}w</div>` : '',
+      r.aw > 0 ? `<div class="seg-leg-item"><div class="seg-dot" style="background:${C.amcs}"></div>AMCS ${r.aw}w</div>` : '',
+      r.pw > 0 ? `<div class="seg-leg-item"><div class="seg-dot" style="background:${C.peri}"></div>Perinatal ${r.pw}w</div>` : '',
     ].filter(Boolean).join('');
 
-    const capPills = showCaps ? `
-      <div class="cap-pills">
-        <span class="cap-pill" style="background:#3b82f618;color:#3b82f6;border:1px solid #3b82f640">max ${m.wkCap}w</span>
-        <span class="cap-pill" style="background:#f59e0b18;color:#f59e0b;border:1px solid #f59e0b40">max ${m.weCap} w/e</span>
-      </div>` : '';
+    const callColors = [
+      ...Array(r.cd).fill(C.detox),
+      ...Array(r.ca).fill(C.amcs),
+    ];
+    const callDots = callColors.map(c => `<div class="call-dot-pip" style="background:${c}"></div>`).join('');
 
-    const siteLabel = m.site === 'rjh' ? 'RJH only' :
-                      m.site === 'vgh' ? 'VGH only' :
-                      m.site === 'hwh' ? 'HerWayHome' : 'RJH + VGH';
+    const callLeg = [
+      r.cd > 0 ? `<div class="seg-leg-item"><div class="seg-dot" style="background:${C.detox};border-radius:50%"></div>Detox ${r.cd}d</div>` : '',
+      r.ca > 0 ? `<div class="seg-leg-item"><div class="seg-dot" style="background:${C.amcs};border-radius:50%"></div>AMCS ${r.ca}d</div>` : '',
+    ].filter(Boolean).join('');
+
+    const newBadge    = !m.real ? `<span class="badge" style="background:${C.newm}18;color:${C.newm};border:1px solid ${C.newm}40">NEW</span>` : '';
+    const sharedPract = (m.id === 'MTB' || m.id === 'AR')
+      ? `<span class="badge" style="background:#a855f718;color:#a855f7;border:1px solid #a855f740" title="Shares family practice with ${m.id === 'MTB' ? 'AR' : 'MTB'} — cannot be scheduled simultaneously">⟷ ${m.id === 'MTB' ? 'AR' : 'MTB'}</span>`
+      : '';
+    const pillStyle  = 'background:#3b82f618;color:#3b82f6;border:1px solid #3b82f640';
+    const wkCapLabel = `max ${ew}w`;
+    const weCapLabel = `max ${ewe} w/e`;
 
     el.className = 'card';
     el.style.borderTopColor = pc + '80';
@@ -1013,364 +1151,337 @@ function renderGrid(calc) {
       <div class="card-body">
         <div class="card-id-row">
           <div class="card-id-left">
-            <div style="display:flex;align-items:center;gap:6px">${badges.length ? `<span class="card-id" style="color:${pc}">${m.label}</span>${badges}` : `<span class="card-id" style="color:${pc}">${m.label}</span>`}</div>
-            ${capPills}
+            <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap">
+              <span class="card-id" style="color:${pc}">${esc(m.label)}</span>${newBadge}${sharedPract}
+            </div>
+            <div class="cap-pills">
+              <span class="cap-pill" style="${pillStyle}">${wkCapLabel}</span>
+              <span class="cap-pill" style="${pillStyle}">${weCapLabel}</span>
+            </div>
           </div>
           <div class="card-wks">
             <div class="card-wks-num">${r.totalWks}</div>
             <div class="card-wks-lbl">WKS SCHED</div>
           </div>
         </div>
-        <div class="card-sites">${siteLabel}</div>
-
+        <div class="role-pills">${rolePillsHTML(m) || '<span style="font-size:11px;color:var(--muted)">No roles assigned</span>'}</div>
         <div>
-          <div class="call-section-title" style="margin-bottom:4px">Weeks / yr</div>
+          <div class="call-section-title">Weeks — ${activePeriod === 'sepDec' ? 'Sep–Dec' : 'Jan–Jun'}</div>
           <div class="week-grid">${weekBoxes}</div>
-          <div class="seg-legend" style="margin-top:5px">${legItems.join('') || '<span style="font-size:9px;color:var(--muted)">No services assigned</span>'}</div>
+          <div class="seg-legend" style="margin-top:5px">${legItems || '<span style="font-size:11px;color:var(--muted)">No services assigned</span>'}</div>
         </div>
-
         <div class="card-divider"></div>
-
         <div>
-          <div class="call-section-title" style="margin-bottom:4px">Weekends &amp; STATs / yr</div>
-          ${callDots.length
-            ? `<div class="call-dot-grid">${callDots}</div>
-               <div class="seg-legend" style="margin-top:5px">${callLegItems.join('')}</div>`
-            : `<div class="no-call">No weekend/STAT call obligations</div>`
-          }
+          <div class="call-section-title">W/E + STATs — ${activePeriod === 'sepDec' ? 'Sep–Dec' : 'Jan–Jun'}</div>
+          ${callDots
+            ? `<div class="call-dot-grid">${callDots}</div><div class="seg-legend" style="margin-top:5px">${callLeg}</div>`
+            : `<div class="no-call">${m.peri && !m.amcsFirst && !m.amcsSecond && !m.amcsVGH && !m.detox ? '' : 'No weekend/STAT call obligations'}</div>`}
+          ${m.peri ? `<div style="font-size:11px;color:${C.peri};margin-top:4px;opacity:.85">+ Perinatal call: on-call as required (HerWayHome)</div>` : ''}
         </div>
-
-        ${m.notes ? `<div class="card-notes"><span style="font-size:9px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:3px">Notes</span>${m.notes}</div>` : ''}
+        ${m.notes ? `<div class="card-notes"><span style="font-size:11px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;display:block;margin-bottom:3px">Notes</span>${esc(m.notes)}</div>` : ''}
       </div>`;
     el.onclick = () => openPanel(m.id);
     grid.appendChild(el);
   });
 }
 
-
-
-// ── Render sidebar ────────────────────────────────────────────────────────
-function renderSidebar(calc) {
-  const { demands, supply, callSupply, detoxNonAjTarget } = calc;
-  const sb = document.getElementById('sidebar');
-
-  function svcBlock(label, supplied, demanded, callSup, callDemand, color, callNote) {
-    const wkPct   = demanded > 0 ? Math.min(100, supplied / demanded * 100) : 0;
-    const callPct = callDemand > 0 ? Math.min(100, callSup / callDemand * 100) : 0;
-    const wkColor   = supplied >= demanded ? '#22c55e' : (supplied >= demanded * .85 ? '#f59e0b' : '#ef4444');
-    const callColor = callSup >= callDemand ? '#22c55e' : (callSup >= callDemand * .85 ? '#f59e0b' : '#ef4444');
-    const suppR = Math.round(supplied);
-    const callR = Math.round(callSup);
-
-    return `
-      <div class="deficit-item">
-        <div class="deficit-svc" style="color:${color}">${label}</div>
-        <div style="font-size:9px;color:var(--dim);margin-bottom:2px">Weeks</div>
-        <div class="deficit-bar-wrap">
-          <div class="deficit-bar-fill" style="width:${wkPct}%;background:${wkColor}"></div>
-        </div>
-        <div class="deficit-nums">
-          <span style="color:${wkColor}">${suppR}</span>
-          <span style="color:var(--muted)">/ ${demanded}</span>
-        </div>
-        <div style="font-size:9px;color:var(--dim);margin-top:4px;margin-bottom:2px">W/E + STATs${callNote ? ` <span style="color:var(--muted)">${callNote}</span>` : ''}</div>
-        <div class="deficit-bar-wrap">
-          <div class="deficit-bar-fill" style="width:${callPct}%;background:${callColor}"></div>
-        </div>
-        <div class="deficit-nums">
-          <span style="color:${callColor}">${callR}</span>
-          <span style="color:var(--muted)">/ ${callDemand}</span>
-        </div>
-      </div>`;
-  }
-
-  // Build rules text based on current settings
-
-
-  const detoxRules = [
-    `Detox Core: RH = 13 wks, AJ = 6 wks (both fixed).`,
-    `Detox Support: remaining ${demands.detox - 39} wks shared equally among support members.`,
-    'Detox and AMCS call caps are combined — Detox call days count toward the combined call cap.',
-    'AJ: Detox Support member. Shares AMCS and Detox call obligations with other support members.',
-    'Detox and AMCS call are interchangeable — all call days count equally toward the combined service obligation.'
-  ];
-
-  const amcsRules = [
-    `AMCS demand: ${demands.amcs} wks/yr (${secondDoc ? 'RJH first + second doc + VGH' : 'RJH first doc + VGH'}).`,
-    'Base obligation = demand ÷ eligible members. Detox and Perinatal weeks credited 1-for-1.',
-    'Whole weeks assigned via largest-remainder method.',
-    'Call pool: 116 weekend/STAT days/yr, distributed proportionate to weeks worked.'
-  ];
-
-  const periRules = [
-    'Fixed 13 wks/yr each for AW, KM, AR, MTB.',
-    '116 weekend/STAT days/yr split equally across all 4 Perinatal members.',
-    'Perinatal call caps are never enforced.'
-  ];
-
-  function ruleItem(text) {
-    return `<div style="display:flex;gap:6px;margin-bottom:5px">
-      <span style="color:var(--muted);flex-shrink:0;margin-top:1px">·</span>
-      <span style="font-size:10px;color:var(--dim);line-height:1.5">${text}</span>
-    </div>`;
-  }
-
-  function ruleSection(title, color, rules) {
-    return `<div style="margin-bottom:12px">
-      <div style="font-size:9px;color:${color};text-transform:uppercase;letter-spacing:.08em;font-family:monospace;margin-bottom:5px">${title}</div>
-      ${rules.map(ruleItem).join('')}
-    </div>`;
-  }
-
-  sb.innerHTML = `
-    <div>
-      <div class="sidebar-section-title">Service coverage</div>
-      ${svcBlock('AMCS',      supply.amcs,  demands.amcs,  callSupply.amcs,  demands.call,      C.amcs,  '')}
-      ${svcBlock('Detox',     supply.detox, demands.detox, callSupply.detox, detoxNonAjTarget,  C.dcore, '')}
-      ${svcBlock('Perinatal', supply.peri,  demands.peri,  callSupply.peri,  demands.call,      C.peri,  '')}
-    </div>
-    <div>
-      <div class="sidebar-section-title">Model</div>
-      <div class="stat-block">
-        <label>AMCS demand</label>
-        <div class="stat-val" style="color:${C.amcs}">${demands.amcs} wks</div>
-      </div>
-
-      <div class="stat-block">
-        <label>RJH 2nd doc</label>
-        <div class="stat-val" style="color:${secondDoc ? C.amcs : C.dim}">${secondDoc ? 'On' : 'Off'}</div>
-      </div>
-      <div class="stat-block">
-        <label>Active members</label>
-        <div class="stat-val">${members.filter(m => !m.onLeave && (m.amcs||m.detoxCore||m.detoxSupp||m.peri)).length}</div>
-      </div>
-    </div>
-    <div>
-      <div class="sidebar-section-title">Scheduling rules</div>
-
-      ${ruleSection('AMCS', C.amcs, amcsRules)}
-      ${ruleSection('Detox', C.dcore, detoxRules)}
-      ${ruleSection('Perinatal', C.peri, periRules)}
-    </div>`;
-}
-
 // ── Full render ───────────────────────────────────────────────────────────
 function render() {
-  ['all','amcs','detox','perinatal'].forEach(k => {
-    const btn = document.getElementById('flt-' + k);
-    if (btn) btn.classList.toggle('active', k === activeFilter);
-  });
   const calc = compute();
+  renderCoverageHeader(calc);
+  renderFilterBar(calc);
   renderGrid(calc);
-  renderSidebar(calc);
-  // Cap mode is fixed to 'all'
+
   const sdBtn = document.getElementById('seconddoc-btn');
-  sdBtn.classList.toggle('on', secondDoc);
-  document.getElementById('seconddoc-lbl').textContent = secondDoc ? 'ON' : 'OFF';
+  if (sdBtn) { sdBtn.classList.toggle('on', secondDoc); document.getElementById('seconddoc-lbl').textContent = secondDoc ? 'ON' : 'OFF'; }
+  const p1Btn = document.getElementById('period-sepdec');
+  const p2Btn = document.getElementById('period-janjun');
+  if (p1Btn && p2Btn) {
+    p1Btn.className = 'period-btn' + (activePeriod === 'sepDec' ? ' active-sepdec' : '');
+    p2Btn.className = 'period-btn' + (activePeriod === 'janJun' ? ' active-janjun' : '');
+  }
+  const dfBtn = document.getElementById('detoxfirst-btn');
+  if (dfBtn) { dfBtn.classList.toggle('on', detoxFirst); document.getElementById('detoxfirst-lbl').textContent = detoxFirst ? 'ON' : 'OFF'; }
+  const settBtn = document.getElementById('settings-btn');
+  if (settBtn) settBtn.classList.toggle('active', panelMode === 'settings' && document.getElementById('panel').classList.contains('open'));
 }
 
-// ── Global setting handlers ───────────────────────────────────────────────
+// ── Global toggles ────────────────────────────────────────────────────────
+function toggleSecondDoc()  { secondDoc  = !secondDoc;  saveState(); render(); }
+function toggleDetoxFirst() { detoxFirst = !detoxFirst; saveState(); render(); }
 
-function toggleSecondDoc() {
-  secondDoc = !secondDoc;
-  // Auto-update noRJHFirst for DM and AJ when second doc is off
-  ['AJ','DM'].forEach(id => {
-    const m = members.find(m => m.id === id);
-    if (m) m.noRJHFirst = !secondDoc || m.site === 'vgh';
-  });
-  render();
+function setPeriod(p) {
+  if (p !== 'sepDec' && p !== 'janJun') return;
+  activePeriod = p;
+  saveState(); render();
+  if (editingId) {
+    const m = members.find(m => m.id === editingId);
+    if (m) document.getElementById('panel-body').innerHTML = buildPanelHTML(m);
+  }
 }
+// Legacy alias in case any saved state calls the old function name
+function togglePeriod() { setPeriod(activePeriod === 'janJun' ? 'sepDec' : 'janJun'); }
 
-// ── Add placeholder ────────────────────────────────────────────────────────
 function addPlaceholder() {
   placeholderCount++;
   const newId = 'N' + placeholderCount;
   members.push({
-    id: newId, label: newId, real: false, onLeave: false, senior: false,
-    amcs: true, detoxCore: false, detoxSupp: true, peri: false,
-    site: 'both', noRJHFirst: false,
-    wkCap: 20, weCap: 20, notes: 'Placeholder member',
+    id: newId, label: newId, real: false, onLeave: false,
+    amcsFirst: true, amcsSecond: false, amcsVGH: true, detox: true, peri: false,
+    wkCapSepDec: 7, weCapSepDec: 4, wkCapJanJun: 10, weCapJanJun: 6,
+    notes: 'Placeholder member',
   });
-  render();
-  openPanel(newId);
+  saveState(); render(); openPanel(newId);
 }
 
-// ── Edit panel ────────────────────────────────────────────────────────────
-function openPanel(id) {
-  const m = members.find(m => m.id === id);
-  if (!m) return;
-  editingId = id;
+// ── Settings panel ────────────────────────────────────────────────────────
+function openSettings() {
+  panelMode = 'settings'; editingId = null;
+  document.getElementById('panel-title').textContent = 'Model settings';
+  document.getElementById('panel-body').innerHTML = buildSettingsHTML();
+  document.getElementById('panel').classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+  render();
+}
 
+function buildSettingsHTML() {
+  function numField(label, key, sublabel) {
+    return `
+      <div class="field-row">
+        <div><div class="field-label">${label}</div>${sublabel ? `<div class="field-sublabel">${sublabel}</div>` : ''}</div>
+        <input class="num-input" type="number" min="0" max="365" value="${settings[key]}"
+          onchange="setSetting('${key}',this.value)" />
+      </div>`;
+  }
+  const periActive = members.filter(m => !m.onLeave && m.peri && effWk(m) > 0);
+  const amcsRoles  = secondDoc ? 'First Doc + Second Doc + VGH' : 'First Doc + VGH';
+  const ps = activePeriod === 'sepDec' ? {
+    amcsBase: settings.sepDecAmcsBase, amcsSecond: settings.sepDecAmcsSecond,
+    detox: settings.sepDecDetox, callPool: settings.sepDecCallPool,
+  } : {
+    amcsBase: settings.janJunAmcsBase, amcsSecond: settings.janJunAmcsSecond,
+    detox: settings.janJunDetox, callPool: settings.janJunCallPool,
+  };
+  return `
+    <div>
+      <div class="panel-section-title" style="color:#f59e0b">Sep–Dec 2026 demands (~17 weeks, ~38 call days)</div>
+      ${numField('AMCS base',    'sepDecAmcsBase',   'Person-weeks (17w × 2 sites = 34)')}
+      ${numField('AMCS 2nd doc', 'sepDecAmcsSecond', 'Added when RJH 2nd doc is on')}
+      ${numField('Detox',        'sepDecDetox',       'Total Detox person-weeks')}
+      ${numField('Perinatal',    'sepDecPeri',        'Total Perinatal person-weeks')}
+      ${numField('W/E + STAT days', 'sepDecCallPool', 'Call days in period (per service)')}
+    </div>
+    <hr class="panel-divider">
+    <div>
+      <div class="panel-section-title" style="color:${C.amcs}">Jan–Jun 2027 demands (~26 weeks, ~56 call days)</div>
+      ${numField('AMCS base',    'janJunAmcsBase',   'Person-weeks (26w × 2 sites = 52)')}
+      ${numField('AMCS 2nd doc', 'janJunAmcsSecond', 'Added when RJH 2nd doc is on')}
+      ${numField('Detox',        'janJunDetox',       'Total Detox person-weeks')}
+      ${numField('Perinatal',    'janJunPeri',        'Total Perinatal person-weeks')}
+      ${numField('W/E + STAT days', 'janJunCallPool', 'Call days in period (per service)')}
+    </div>
+    <hr class="panel-divider">
+    <div>
+      <div class="panel-section-title">Scheduling rules</div>
+      <div class="info-box" style="line-height:1.8">
+        <strong style="color:${C.amcs}">AMCS</strong> (${amcsRoles}) — ${ps.amcsBase}w${secondDoc ? ' + ' + ps.amcsSecond + 'w 2nd doc' : ''} this period. Members fill equally from available cap after Perinatal.<br>
+        <strong style="color:${C.detox}">Detox</strong> — ${ps.detox}w this period, from remaining cap after AMCS.<br>
+        <strong style="color:${C.peri}">Perinatal</strong> — distributed equally among: ${periActive.map(m=>m.label).join(', ') || 'none active'}.<br>
+        <strong>Call</strong> — ${ps.callPool} days this period per service. Priority: ${detoxFirst ? 'Detox first, then AMCS' : 'AMCS first, then Detox'}.
+      </div>
+    </div>
+    <hr class="panel-divider">
+    <div>
+      <div class="panel-section-title">Data</div>
+      <div class="action-row">
+        <button class="action-btn" onclick="exportJSON()">↓ Export JSON</button>
+        <button class="action-btn" onclick="importJSON()">↑ Import JSON</button>
+      </div>
+      <button class="delete-btn" style="margin-top:10px" onclick="resetToDefaults()">↺ Reset all to defaults</button>
+    </div>`;
+}
+
+function setSetting(key, val) {
+  settings[key] = Math.max(0, parseInt(val) || 0); saveState(); render();
+}
+
+// ── Member panel ──────────────────────────────────────────────────────────
+function openPanel(id) {
+  const m = members.find(m => m.id === id); if (!m) return;
+  panelMode = 'member'; editingId = id;
   document.getElementById('panel-title').textContent = m.real ? m.label : `${m.label} (placeholder)`;
   document.getElementById('panel-body').innerHTML = buildPanelHTML(m);
   document.getElementById('panel').classList.add('open');
   document.getElementById('overlay').classList.add('open');
+  render();
 }
 
 function closePanel() {
   document.getElementById('panel').classList.remove('open');
   document.getElementById('overlay').classList.remove('open');
-  editingId = null;
+  editingId = null; panelMode = 'member'; render();
 }
 
 function buildPanelHTML(m) {
-  const isPlaceholder = !m.real;
-
-  function toggle(label, key, sublabel='') {
-    const on = !!m[key];
+  function tog(label, key, sublabel) {
     return `
       <div class="field-row">
         <div>
           <div class="field-label">${label}</div>
           ${sublabel ? `<div class="field-sublabel">${sublabel}</div>` : ''}
         </div>
-        <div class="toggle-switch ${on ? 'on' : ''}" onclick="toggleField('${m.id}','${key}')"></div>
+        <div class="toggle-switch ${m[key] ? 'on' : ''}" onclick="toggleField('${m.id}','${key}')"></div>
       </div>`;
   }
-
-  function numField(label, key, sublabel='') {
+  function numField(label, key, sublabel, min, max) {
     return `
       <div class="field-row">
         <div>
           <div class="field-label">${label}</div>
           ${sublabel ? `<div class="field-sublabel">${sublabel}</div>` : ''}
         </div>
-        <input class="num-input" type="number" min="0" max="52" value="${m[key]}"
+        <input class="num-input" type="number" min="${min ?? 0}" max="${max ?? 52}" value="${m[key] ?? 0}"
           onchange="setNum('${m.id}','${key}',this.value)" />
       </div>`;
   }
 
-  function radioField(label, key, options) {
-    const opts = options.map(([val, lbl]) =>
-      `<div class="radio-opt ${m[key]===val?'sel':''}" onclick="setRadio('${m.id}','${key}','${val}')">${lbl}</div>`
-    ).join('');
-    return `
-      <div style="margin-bottom:8px">
-        <div class="field-label" style="margin-bottom:5px">${label}</div>
-        <div class="radio-row">${opts}</div>
-      </div>`;
-  }
-
   const calc = compute();
-  const r = calc.results[m.id] || { aw:0, dw:0, pw:0, totalWks:0, ca:0, cd:0, cp:0, totalCall:0 };
+  const r    = calc.results[m.id] || { aw:0, dw:0, pw:0, totalWks:0, ca:0, cd:0, cp:0, totalCall:0 };
+  const ew   = effWk(m);
+  const overAllocated = r.totalWks > ew && ew > 0;
+  const periodLabel = activePeriod === 'sepDec' ? 'Sep–Dec 2026' : 'Jan–Jun 2027';
+  const sdStyle = activePeriod === 'sepDec'
+    ? 'border-left:2px solid #f59e0b;padding-left:8px;margin-bottom:8px'
+    : 'border-left:2px solid var(--border2);padding-left:8px;margin-bottom:8px;opacity:.7';
+  const jjStyle = activePeriod === 'janJun'
+    ? 'border-left:2px solid #3b82f6;padding-left:8px;margin-bottom:4px'
+    : 'border-left:2px solid var(--border2);padding-left:8px;margin-bottom:4px;opacity:.7';
 
   return `
-    <!-- Current allocation (read-only) -->
     <div>
-      <div class="panel-section-title">Current allocation</div>
-      <div class="info-box">
-        <strong>Weeks:</strong> ${r.aw} AMCS · ${r.dw} Detox · ${r.pw} Perinatal = <strong>${r.totalWks} total</strong><br>
-        <strong>W/E+STATs:</strong> ${r.ca} AMCS · ${r.cd} Detox · ${r.cp} Perinatal = <strong>~${r.totalCall} total</strong>
+      <div class="panel-section-title">Identity</div>
+      <div class="field-row">
+        <div class="field-label">Label / initials</div>
+        <input class="text-input" type="text" maxlength="8" value="${esc(m.label)}"
+          oninput="setLabel('${m.id}',this.value)"
+          onfocus="this.style.borderColor='var(--amcs)'"
+          onblur="this.style.borderColor='var(--border2)'" />
       </div>
     </div>
 
     <hr class="panel-divider">
 
-    <!-- Leave toggle -->
     <div>
       <div class="panel-section-title">Status</div>
-      ${toggle('On leave', 'onLeave', 'Excludes from all scheduling')}
+      ${tog('On leave', 'onLeave', 'Excluded from all scheduling')}
     </div>
 
     <hr class="panel-divider">
 
-    <!-- Services -->
     <div>
-      <div class="panel-section-title">Service membership</div>
-      ${toggle('AMCS', 'amcs', 'Addiction Medicine Consult Service')}
-      ${toggle('Detox Core', 'detoxCore', 'Fixed Detox weeks (AJ / RH). Mutually exclusive with Support.')}
-      ${toggle('Detox Support', 'detoxSupp', 'Shares Detox deficit. Mutually exclusive with Core.')}
-      ${toggle('Perinatal', 'peri', 'HerWayHome — 13 wks fixed')}
+      <div class="panel-section-title">Current allocation — ${periodLabel}</div>
+      ${m.onLeave
+        ? `<div class="info-box" style="color:var(--muted);font-style:italic">Not scheduled — on leave</div>`
+        : `<div class="info-box">
+            <strong>Weeks:</strong> ${r.aw} AMCS · ${r.dw} Detox · ${r.pw} Perinatal = <strong>${r.totalWks} total</strong><br>
+            <strong>W/E+STATs:</strong> ${r.ca} AMCS · ${r.cd} Detox · ${r.cp} Peri = <strong>~${r.totalCall} total</strong>
+          </div>
+          ${overAllocated ? `<div class="warn-box" style="margin-top:6px">⚠ Allocated ${r.totalWks}w exceeds cap of ${ew}w for ${periodLabel}</div>` : ''}`
+      }
     </div>
 
     <hr class="panel-divider">
 
-    <!-- Site -->
     <div>
-      <div class="panel-section-title">Site preference</div>
-      ${radioField('Site', 'site', [['rjh','RJH only'],['vgh','VGH only'],['both','Both'],['hwh','HWH only']])}
-      ${toggle('No RJH first-doc', 'noRJHFirst', 'Will not cover RJH first-doc slot')}
+      <div class="panel-section-title">Service roles</div>
+      ${tog('RJH AMCS – First Doc',  'amcsFirst',  'Covers RJH inpatient consult first-doc slot')}
+      ${tog('RJH AMCS – Second Doc', 'amcsSecond', 'Covers RJH inpatient consult second-doc slot')}
+      ${tog('VGH AMCS',              'amcsVGH',    'Covers VGH inpatient consult')}
+      ${tog('Detox',                  'detox',      'Inpatient detox coverage (RJH / VGH)')}
+      ${tog('Perinatal (HWH)',        'peri',       'HerWayHome perinatal')}
     </div>
 
     <hr class="panel-divider">
 
-    <!-- Seniority & caps -->
     <div>
-      <div class="panel-section-title">Seniority &amp; caps</div>
-      ${numField('Week cap', 'wkCap', 'Maximum weeks per year (all services combined)')}
-      ${numField('Weekend/STAT cap', 'weCap', 'Maximum call days per year (AMCS + Detox combined — Perinatal call is uncapped)')}
-      <div style="font-size:9px;color:var(--muted);margin-top:4px">Caps are stored always; respected based on cap mode setting.</div>
+      <div class="panel-section-title">Availability caps</div>
+      <div style="font-size:11px;color:var(--dim);margin-bottom:10px;line-height:1.5">
+        Weeks and call days this person can contribute in each period. Sep–Dec includes already-scheduled shifts. A week = 5 days (Second Doc: 3–5 days).
+      </div>
+      <div style="${sdStyle}">
+        <div style="font-size:11px;font-weight:600;color:#f59e0b;margin-bottom:6px">Sep–Dec 2026</div>
+        ${numField('Week cap', 'wkCapSepDec', 'Total weeks available Sep–Dec (incl. scheduled)')}
+        ${numField('Call day cap', 'weCapSepDec', 'Total W/E + STAT days available Sep–Dec', 0, 365)}
+      </div>
+      <div style="${jjStyle}">
+        <div style="font-size:11px;font-weight:600;color:#3b82f6;margin-bottom:6px">Jan–Jun 2027</div>
+        ${numField('Week cap', 'wkCapJanJun', 'Total weeks available Jan–Jun')}
+        ${numField('Call day cap', 'weCapJanJun', 'Total W/E + STAT days available Jan–Jun', 0, 365)}
+      </div>
     </div>
 
     <hr class="panel-divider">
 
-    <!-- Notes -->
     <div>
       <div class="panel-section-title">Notes</div>
       <textarea
         style="width:100%;background:var(--card);border:1px solid var(--border2);border-radius:5px;color:var(--text);font-size:11px;font-family:system-ui,sans-serif;padding:8px;resize:vertical;min-height:72px;line-height:1.5"
         placeholder="Scheduling notes, restrictions, preferences…"
-        onchange="setNotes('${m.id}',this.value)"
+        oninput="setNotes('${m.id}',this.value)"
         onfocus="this.style.borderColor='var(--amcs)'"
         onblur="this.style.borderColor='var(--border2)'"
-      >${m.notes || ''}</textarea>
+      >${esc(m.notes || '')}</textarea>
     </div>
 
-    ${isPlaceholder ? `
+    ${!m.real ? `
     <hr class="panel-divider">
     <div>
       <div class="panel-section-title">Placeholder</div>
       <button class="delete-btn" onclick="removeMember('${m.id}')">Remove this member</button>
-    </div>` : ''}
-  `;
+    </div>` : ''}`;
 }
 
-// ── Panel field handlers ──────────────────────────────────────────────────
+// ── Panel handlers ────────────────────────────────────────────────────────
 function toggleField(id, key) {
-  const m = members.find(m => m.id === id);
-  if (!m) return;
-  const newVal = !m[key];
-  m[key] = newVal;
-
-  // Mutual exclusivity: Detox Core ↔ Detox Support
-  if (key === 'detoxCore' && newVal) m.detoxSupp = false;
-  if (key === 'detoxSupp' && newVal) m.detoxCore = false;
-
-  render();
-  // Refresh panel
+  const m = members.find(m => m.id === id); if (!m) return;
+  m[key] = !m[key];
+  saveState(); render();
   document.getElementById('panel-body').innerHTML = buildPanelHTML(m);
 }
 
 function setNum(id, key, val) {
-  const m = members.find(m => m.id === id);
-  if (!m) return;
-  m[key] = Math.max(0, parseInt(val) || 0);
-  render();
+  const m = members.find(m => m.id === id); if (!m) return;
+  const isCallCap = key === 'weCapSepDec' || key === 'weCapJanJun';
+  const max = isCallCap ? 365 : 52;
+  m[key] = Math.min(max, Math.max(0, parseInt(val) || 0));
+  saveState(); render();
   document.getElementById('panel-body').innerHTML = buildPanelHTML(m);
 }
 
-function setRadio(id, key, val) {
-  const m = members.find(m => m.id === id);
-  if (!m) return;
-  m[key] = val;
-  render();
-  document.getElementById('panel-body').innerHTML = buildPanelHTML(m);
+function setLabel(id, val) {
+  const m = members.find(m => m.id === id); if (!m) return;
+  m.label = val || m.id; saveState(); render();
+  document.getElementById('panel-title').textContent = m.real ? m.label : `${m.label} (placeholder)`;
 }
 
 function setNotes(id, val) {
-  const m = members.find(m => m.id === id);
-  if (!m) return;
-  m.notes = val;
-  render();
+  const m = members.find(m => m.id === id); if (!m) return;
+  m.notes = val; saveState();
 }
 
 function removeMember(id) {
   members = members.filter(m => m.id !== id);
-  closePanel();
-  render();
+  saveState(); closePanel(); render();
+}
+
+// ── HTML escape ───────────────────────────────────────────────────────────
+function esc(str) {
+  return String(str || '')
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 // ── Init ──────────────────────────────────────────────────────────────────
+loadState();
 render();
 </script>
 </body>
